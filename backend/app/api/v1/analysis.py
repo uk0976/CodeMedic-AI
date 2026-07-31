@@ -34,7 +34,7 @@ async def analysis_stream_generator(
     # Stream progress messages
     for step in progress_steps:
         yield f"data: {json.dumps({'status': step})}\n\n"
-        await asyncio.sleep(0.8)  # Keep user updated with transition steps
+        await asyncio.sleep(0.1)  # Keep user updated with transition steps
 
     try:
         # Run analysis service
