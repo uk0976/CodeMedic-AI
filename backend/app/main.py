@@ -16,6 +16,13 @@ settings = get_settings()
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     configure_logging(settings.log_level)
+
+    # Auto-create tables on startup
+    from app.database.base import Base
+    from app.database.session import engine
+
+    Base.metadata.create_all(bind=engine)
+
     yield
 
 

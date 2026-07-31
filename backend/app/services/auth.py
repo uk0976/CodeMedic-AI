@@ -61,6 +61,7 @@ class AuthService:
             )
         )
         from app.schemas.auth import UserResponse
+
         return (
             AuthResponse(
                 access_token=create_access_token(str(user.id)),

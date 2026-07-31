@@ -46,9 +46,7 @@ class OpenAIService:
 
         for attempt in range(max_retries):
             try:
-                logger.info(
-                    f"Calling OpenAI (Model: {model}), Attempt {attempt + 1}/{max_retries}"
-                )
+                logger.info(f"Calling OpenAI (Model: {model}), Attempt {attempt + 1}/{max_retries}")
 
                 # Using the standard SDK client's parsing helper
                 response = self.client.beta.chat.completions.parse(

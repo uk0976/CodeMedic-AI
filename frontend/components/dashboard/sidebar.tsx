@@ -25,7 +25,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const mainNavItems = [
     { label: "Dashboard", href: "/demo", icon: LayoutDashboard },
     { label: "Analyze Code", href: "/analyze", icon: Code2 },
-    { label: "Reports", href: "#reports", icon: BarChart3 },
+    { label: "Reports", href: "/reports", icon: BarChart3 },
     { label: "Settings", href: "#settings", icon: SettingsIcon },
   ];
 
