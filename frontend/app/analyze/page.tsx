@@ -5,7 +5,7 @@ import Editor from "@monaco-editor/react";
 import { EditorSidebar } from "@/components/editor/editor-sidebar";
 import { EditorToolbar } from "@/components/editor/editor-toolbar";
 import { EditorStatusBar } from "@/components/editor/editor-status-bar";
-import { EditorRightPanel } from "@/components/editor/editor-right-panel";
+import { EditorRightPanel, AnalysisResult } from "@/components/editor/editor-right-panel";
 import { QuickModeCards, AnalysisMode } from "@/components/editor/quick-mode-cards";
 import { UploadZone } from "@/components/editor/upload-zone";
 import { motion, AnimatePresence } from "framer-motion";
@@ -61,6 +61,10 @@ export default function EditorWorkspacePage() {
   const [totalLines, setTotalLines] = useState<number>(1);
   const [totalChars, setTotalChars] = useState<number>(0);
   const [editorStatus, setEditorStatus] = useState<"Ready" | "Modified" | "Saved" | "Formatting" | "Analyzing">("Ready");
+  const [analysisResults, setAnalysisResults] = useState<AnalysisResult | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
+  const [loadingMessage, setLoadingMessage] = useState<string | null>(null);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
 
   // UX Layout Panels States
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
@@ -119,6 +123,8 @@ export default function EditorWorkspacePage() {
     setShowEditor(true);
     setEditorStatus("Saved");
     setTotalChars(content.length);
+    setAnalysisResults(null);
+    setAnalysisError(null);
   };
 
   const handleLoadTemplate = (name: string, content: string, lang: string) => {
@@ -128,6 +134,8 @@ export default function EditorWorkspacePage() {
     setShowEditor(true);
     setEditorStatus("Saved");
     setTotalChars(content.length);
+    setAnalysisResults(null);
+    setAnalysisError(null);
   };
 
   const getExtension = (lang: string) => {
@@ -159,6 +167,8 @@ export default function EditorWorkspacePage() {
     setEditorStatus("Ready");
     setTotalChars(0);
     setTotalLines(1);
+    setAnalysisResults(null);
+    setAnalysisError(null);
   };
 
   const handleFormat = () => {
@@ -170,16 +180,88 @@ export default function EditorWorkspacePage() {
     }
   };
 
-  const handleAnalyze = () => {
+  const handleAnalyze = async () => {
     if (code.trim().length === 0) {
       alert("Please paste or upload some code first to run the diagnostics.");
       return;
     }
+
+    setIsAnalyzing(true);
+    setAnalysisError(null);
+    setLoadingMessage("Analyzing...");
     setEditorStatus("Analyzing");
-    setTimeout(() => {
+    setAnalysisResults(null);
+
+    try {
+      const response = await fetch("http://localhost:8000/api/v1/analysis/analyze", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          code: code,
+          language: language,
+          analysis_types: [analysisType]
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to connect to the analysis engine. Ensure backend is running.");
+      }
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+
+      if (!reader) {
+        throw new Error("Failed to open response stream from backend.");
+      }
+
+      let buffer = "";
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (trimmed.startsWith("data: ")) {
+            const dataStr = trimmed.slice(6).trim();
+            if (!dataStr) continue;
+
+            const payload = JSON.parse(dataStr);
+            if (payload.status) {
+              setLoadingMessage(payload.status);
+            } else if (payload.result) {
+              setAnalysisResults(payload.result);
+            } else if (payload.error) {
+              setAnalysisError(payload.error);
+            }
+          }
+        }
+      }
+
+      if (buffer.trim().startsWith("data: ")) {
+        const dataStr = buffer.trim().slice(6).trim();
+        if (dataStr) {
+          const payload = JSON.parse(dataStr);
+          if (payload.result) {
+            setAnalysisResults(payload.result);
+          } else if (payload.error) {
+            setAnalysisError(payload.error);
+          }
+        }
+      }
+
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "An unexpected error occurred during code analysis.";
+      setAnalysisError(message);
+    } finally {
+      setIsAnalyzing(false);
       setEditorStatus("Saved");
-      alert(`AI diagnostic scan (${analysisType}) completed in simulation mode.`);
-    }, 1500);
+    }
   };
 
   return (
@@ -357,6 +439,44 @@ export default function EditorWorkspacePage() {
             )}
           </AnimatePresence>
 
+          {/* Analysis progress / error overlay */}
+          {(isAnalyzing || analysisError) && (
+            <div className="absolute inset-0 z-30 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-6">
+              {analysisError ? (
+                <div className="glass-panel max-w-sm w-full rounded-2xl border border-red-500/20 bg-slate-900/90 p-6 flex flex-col items-center text-center">
+                  <div className="mb-4 flex size-12 items-center justify-center rounded-xl bg-red-500/10 text-red-400 border border-red-500/20">
+                    <span className="text-lg font-bold">!</span>
+                  </div>
+                  <span className="text-sm font-bold text-white">
+                    Analysis Failed
+                  </span>
+                  <p className="text-xs text-slate-400 mt-2 leading-relaxed">
+                    {analysisError}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setAnalysisError(null)}
+                    className="mt-5 w-full rounded-xl bg-slate-800 py-2.5 text-xs font-bold text-white hover:bg-slate-700 transition"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              ) : (
+                <div className="glass-panel max-w-sm w-full rounded-2xl border border-slate-800 bg-slate-900/90 p-6 flex flex-col items-center text-center">
+                  <div className="mb-4 flex size-12 items-center justify-center rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                    <div className="size-5 rounded-full border-2 border-cyan-500/20 border-t-cyan-400 animate-spin" />
+                  </div>
+                  <span className="text-sm font-bold text-white uppercase tracking-wider">
+                    {loadingMessage || "Analyzing..."}
+                  </span>
+                  <p className="text-xs text-slate-500 mt-2">
+                    Running diagnostic scan on codebase.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Keyboard Shortcuts Dialog Overlay */}
           {showShortcuts && (
             <div className="absolute inset-0 z-30 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-6">
@@ -433,6 +553,11 @@ export default function EditorWorkspacePage() {
               language={language}
               totalChars={totalChars}
               analysisType={analysisType}
+              results={analysisResults}
+              onApplyFix={(newCode) => {
+                setCode(newCode);
+                setEditorStatus("Saved");
+              }}
             />
           </motion.div>
         )}

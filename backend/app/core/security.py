@@ -4,7 +4,7 @@ from secrets import token_urlsafe
 from typing import Any
 
 import jwt
-from pwdlib import PasswordHash
+from pwdlib import PasswordHash  # type: ignore[import-not-found]
 
 from app.core.config import get_settings
 
@@ -23,11 +23,11 @@ password_hasher = PasswordHash.recommended()
 
 
 def hash_password(password: str) -> str:
-    return password_hasher.hash(password)
+    return password_hasher.hash(password)  # type: ignore[no-any-return]
 
 
 def verify_password(password: str, password_hash: str) -> bool:
-    return password_hasher.verify(password, password_hash)
+    return password_hasher.verify(password, password_hash)  # type: ignore[no-any-return]
 
 
 def new_opaque_token() -> str:

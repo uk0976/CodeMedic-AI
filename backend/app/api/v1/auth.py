@@ -44,7 +44,9 @@ def clear_refresh_cookie(response: Response) -> None:
 
 
 @router.post("/register", response_model=AuthResponse, status_code=status.HTTP_201_CREATED)
-def register(payload: RegisterRequest, response: Response, db: Annotated[Session, Depends(get_db_session)]) -> AuthResponse:
+def register(
+    payload: RegisterRequest, response: Response, db: Annotated[Session, Depends(get_db_session)]
+) -> AuthResponse:
     service = AuthService(db)
     user = service.register(payload)
     auth_response, refresh_token, max_age = service.create_auth_response(user)
@@ -53,7 +55,9 @@ def register(payload: RegisterRequest, response: Response, db: Annotated[Session
 
 
 @router.post("/login", response_model=AuthResponse)
-def login(payload: LoginRequest, response: Response, db: Annotated[Session, Depends(get_db_session)]) -> AuthResponse:
+def login(
+    payload: LoginRequest, response: Response, db: Annotated[Session, Depends(get_db_session)]
+) -> AuthResponse:
     service = AuthService(db)
     user = service.authenticate(payload.email, payload.password)
     auth_response, refresh_token, max_age = service.create_auth_response(user, payload.remember_me)
@@ -77,7 +81,10 @@ def refresh(
     refresh_token: Annotated[str | None, Cookie(alias=settings.auth_cookie_name)] = None,
 ) -> AuthResponse:
     if not refresh_token:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Session expired. Please sign in again.")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Session expired. Please sign in again.",
+        )
     auth_response, replacement_token, max_age = AuthService(db).refresh(refresh_token)
     set_refresh_cookie(response, replacement_token, max_age)
     return auth_response
@@ -100,15 +107,25 @@ def get_current_user(
     db: Annotated[Session, Depends(get_db_session)],
 ) -> UserResponse:
     if not credentials:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication required.")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication required."
+        )
     try:
-        payload = jwt.decode(credentials.credentials, settings.jwt_secret_key.get_secret_value(), algorithms=[settings.jwt_algorithm])
+        payload = jwt.decode(
+            credentials.credentials,
+            settings.jwt_secret_key.get_secret_value(),
+            algorithms=[settings.jwt_algorithm],
+        )
         subject = payload.get("sub")
         user = AuthRepository(db).get_user_by_id(UUID(str(subject))) if subject else None
     except (InvalidTokenError, ValueError):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired session.") from None
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired session."
+        ) from None
     if not user or not user.is_active:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired session.")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired session."
+        )
     return UserResponse.model_validate(user)
 
 
@@ -124,9 +141,13 @@ def forgot_password(_: PasswordResetRequest) -> MessageResponse:
 
 @router.post("/reset-password", response_model=MessageResponse)
 def reset_password(_: ResetPasswordRequest) -> MessageResponse:
-    return MessageResponse(message="Password reset flow is ready for verified email delivery integration.")
+    return MessageResponse(
+        message="Password reset flow is ready for verified email delivery integration."
+    )
 
 
 @router.post("/verify-email", response_model=MessageResponse)
 def verify_email(_: VerifyEmailRequest) -> MessageResponse:
-    return MessageResponse(message="Email verification flow is ready for verified email delivery integration.")
+    return MessageResponse(
+        message="Email verification flow is ready for verified email delivery integration."
+    )
