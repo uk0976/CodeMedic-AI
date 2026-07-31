@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { TopBar } from "@/components/dashboard/top-bar";
 import { StatsSection } from "@/components/dashboard/stats-section";
@@ -8,10 +8,11 @@ import { RecentAnalyses } from "@/components/dashboard/recent-analyses";
 import { QuickActions } from "@/components/dashboard/quick-actions";
 import { LanguagesShowcase } from "@/components/dashboard/languages-showcase";
 import { RightPanel } from "@/components/dashboard/right-panel";
-import { motion } from "framer-motion";
-import { Play, Upload } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Play, Upload, ChevronRight } from "lucide-react";
+import { useSearchParams, useRouter } from "next/navigation";
 
-export default function EvaluatorDemoPage() {
+function EvaluatorDemoPageContent() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const containerVariants = {
@@ -29,8 +30,62 @@ export default function EvaluatorDemoPage() {
     show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 260, damping: 20 } },
   };
 
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const showTour = searchParams.get("tour") === "true";
+
+  const skipTour = () => {
+    router.push("/demo");
+  };
+
+  const nextStep = () => {
+    router.push("/analyze?tour=2");
+  };
+
   return (
-    <div className="min-h-screen bg-[#060814] text-slate-100 font-sans">
+    <div className="min-h-screen bg-[#060814] text-slate-100 font-sans relative">
+      {/* Guided Tour Step 1 */}
+      <AnimatePresence>
+        {showTour && (
+          <div className="fixed inset-0 z-50 pointer-events-none flex items-center justify-center p-4 bg-slate-950/20 backdrop-blur-xs">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="pointer-events-auto glass-panel max-w-sm w-full rounded-2xl border border-cyan-500/30 bg-slate-950/95 p-6 shadow-[0_0_50px_rgba(6,182,212,0.25)] flex flex-col space-y-4"
+            >
+              <div className="flex justify-between items-start">
+                <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest">
+                  Guided Tour • Step 1 of 6
+                </span>
+                <button
+                  onClick={skipTour}
+                  className="text-[10px] text-slate-500 hover:text-slate-300 transition font-bold"
+                >
+                  Skip
+                </button>
+              </div>
+              <h3 className="text-base font-bold text-white leading-snug">
+                Welcome Hackathon Evaluator 👋
+              </h3>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                This dashboard workspace summarizes active telemetry metrics (scanned documents, quality indexes, language segments, and bugs fixed).
+              </p>
+              <div className="flex justify-between items-center pt-2">
+                <span className="text-[10px] text-slate-500">Highlighting: Dashboard telemetry</span>
+                <button
+                  onClick={nextStep}
+                  className="rounded-xl bg-cyan-500 hover:bg-cyan-600 px-4 py-2 text-xs font-bold text-white transition flex items-center gap-1"
+                >
+                  Explore Editor
+                  <ChevronRight className="size-3.5" />
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       {/* Sidebar Panel */}
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
@@ -124,5 +179,13 @@ export default function EvaluatorDemoPage() {
         </main>
       </div>
     </div>
+  );
+}
+
+export default function EvaluatorDemoPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#060814]" />}>
+      <EvaluatorDemoPageContent />
+    </Suspense>
   );
 }

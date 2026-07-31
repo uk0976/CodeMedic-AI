@@ -52,7 +52,7 @@ export function Hero() {
             Analyze Code <ArrowRight className="size-4" />
           </a>
           <Link
-            href="/demo"
+            href="/demo?tour=true"
             className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-900/70 px-5 py-3.5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:border-slate-500 hover:bg-slate-800"
           >
             <Play className="size-4 text-cyan-300" /> Try Live Demo

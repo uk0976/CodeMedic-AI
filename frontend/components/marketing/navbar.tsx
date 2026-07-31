@@ -53,7 +53,7 @@ export function Navbar() {
         </div>
         <div className="hidden items-center gap-3 sm:flex">
           <Link
-            href="/demo"
+            href="/demo?tour=true"
             className="rounded-lg bg-gradient-to-r from-blue-600 to-cyan-500 px-3.5 py-2 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:brightness-110"
           >
             Try Live Demo <span aria-hidden="true">✦</span>
@@ -93,7 +93,7 @@ export function Navbar() {
               ))}
             </div>
             <Link
-              href="/demo"
+              href="/demo?tour=true"
               className="mt-3 block rounded-lg bg-blue-600 px-3 py-2 text-center text-sm font-semibold text-white"
             >
               Try Live Demo ✦

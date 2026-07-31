@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, Suspense } from "react";
 import Editor from "@monaco-editor/react";
 import { EditorSidebar } from "@/components/editor/editor-sidebar";
 import { EditorToolbar } from "@/components/editor/editor-toolbar";
@@ -9,6 +9,9 @@ import { EditorRightPanel, AnalysisResult } from "@/components/editor/editor-rig
 import { QuickModeCards, AnalysisMode } from "@/components/editor/quick-mode-cards";
 import { UploadZone } from "@/components/editor/upload-zone";
 import { motion, AnimatePresence } from "framer-motion";
+import { useSearchParams, useRouter } from "next/navigation";
+import { ChevronRight } from "lucide-react";
+import { env } from "@/lib/env";
 import { 
   PanelLeftClose, 
   PanelLeftOpen, 
@@ -43,7 +46,7 @@ interface MonacoEditorInstance {
   getAction: (id: string) => MonacoEditorAction | null;
 }
 
-export default function EditorWorkspacePage() {
+function EditorWorkspacePageContent() {
   // File and Code States
   const [code, setCode] = useState<string>("");
   const [fileName, setFileName] = useState<string>("untitled.py");
@@ -65,6 +68,14 @@ export default function EditorWorkspacePage() {
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
   const [loadingMessage, setLoadingMessage] = useState<string | null>(null);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
+
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const tourStep = searchParams.get("tour");
+
+  const skipTour = () => {
+    router.push("/analyze");
+  };
 
   // UX Layout Panels States
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
@@ -193,7 +204,7 @@ export default function EditorWorkspacePage() {
     setAnalysisResults(null);
 
     try {
-      const response = await fetch("http://localhost:8000/api/v1/analysis/analyze", {
+      const response = await fetch(`${env.apiUrl}/api/v1/analysis/analyze`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -260,7 +271,7 @@ export default function EditorWorkspacePage() {
 
       if (finalResult) {
         try {
-          await fetch("http://localhost:8000/api/v1/reports/", {
+          await fetch(`${env.apiUrl}/api/v1/reports/`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -596,6 +607,107 @@ export default function EditorWorkspacePage() {
           </motion.div>
         )}
       </AnimatePresence>
+      {/* Guided Tour Tooltip Overlays */}
+      <AnimatePresence>
+        {tourStep && (
+          <div className="fixed inset-0 z-50 pointer-events-none">
+            {tourStep === "2" && (
+              <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 15 }}
+                className="pointer-events-auto absolute bottom-20 left-[280px] glass-panel max-w-sm w-full rounded-2xl border border-cyan-500/30 bg-slate-950/95 p-5 shadow-[0_0_50px_rgba(6,182,212,0.25)] flex flex-col space-y-3"
+              >
+                <div className="flex justify-between items-start">
+                  <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest">
+                    Tour • Step 2 of 6
+                  </span>
+                  <button onClick={skipTour} className="text-[10px] text-slate-500 hover:text-slate-350 transition font-bold">Skip</button>
+                </div>
+                <h3 className="text-xs font-bold text-white leading-tight">Monaco Code Editor Workspace</h3>
+                <p className="text-[11px] text-slate-400 leading-relaxed">
+                  This features autocomplete, multiple cursors, folding blocks, search/replace mappers, and files upload drop-zones.
+                </p>
+                <div className="flex justify-end pt-1">
+                  <button
+                    onClick={() => router.push("/analyze?tour=3")}
+                    className="rounded-lg bg-cyan-500 hover:bg-cyan-600 px-3.5 py-1.5 text-[10px] font-bold text-white transition flex items-center gap-1"
+                  >
+                    Next: Audit Trigger
+                    <ChevronRight className="size-3" />
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {tourStep === "3" && (
+              <motion.div
+                initial={{ opacity: 0, y: -15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                className="pointer-events-auto absolute top-24 left-1/2 -translate-x-1/2 glass-panel max-w-sm w-full rounded-2xl border border-cyan-500/30 bg-slate-950/95 p-5 shadow-[0_0_50px_rgba(6,182,212,0.25)] flex flex-col space-y-3"
+              >
+                <div className="flex justify-between items-start">
+                  <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest">
+                    Tour • Step 3 of 6
+                  </span>
+                  <button onClick={skipTour} className="text-[10px] text-slate-500 hover:text-slate-350 transition font-bold">Skip</button>
+                </div>
+                <h3 className="text-xs font-bold text-white leading-tight">AI Diagnostics Launcher</h3>
+                <p className="text-[11px] text-slate-400 leading-relaxed">
+                  Choose audit modes (Bug scans, Security audits, Performance tuning) and click &quot;Analyze Code&quot; to compile real Codex outputs.
+                </p>
+                <div className="flex justify-end pt-1">
+                  <button
+                    onClick={() => router.push("/analyze?tour=4")}
+                    className="rounded-lg bg-cyan-500 hover:bg-cyan-600 px-3.5 py-1.5 text-[10px] font-bold text-white transition flex items-center gap-1"
+                  >
+                    Next: View Results
+                    <ChevronRight className="size-3" />
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {tourStep === "4" && (
+              <motion.div
+                initial={{ opacity: 0, x: 15 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 15 }}
+                className="pointer-events-auto absolute bottom-20 right-[350px] glass-panel max-w-sm w-full rounded-2xl border border-cyan-500/30 bg-slate-950/95 p-5 shadow-[0_0_50px_rgba(6,182,212,0.25)] flex flex-col space-y-3"
+              >
+                <div className="flex justify-between items-start">
+                  <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest">
+                    Tour • Step 4 of 6
+                  </span>
+                  <button onClick={skipTour} className="text-[10px] text-slate-500 hover:text-slate-350 transition font-bold">Skip</button>
+                </div>
+                <h3 className="text-xs font-bold text-white leading-tight">Audits Insights & Fixes</h3>
+                <p className="text-[11px] text-slate-400 leading-relaxed">
+                  Review security, performance, bugs details, and apply code modifications back into the Monaco editor with one click.
+                </p>
+                <div className="flex justify-end pt-1">
+                  <button
+                    onClick={() => router.push("/reports?tour=5")}
+                    className="rounded-lg bg-cyan-500 hover:bg-cyan-600 px-3.5 py-1.5 text-[10px] font-bold text-white transition flex items-center gap-1"
+                  >
+                    Next: Reports History
+                    <ChevronRight className="size-3" />
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </div>
+        )}
+      </AnimatePresence>
     </div>
+  );
+}
+
+export default function EditorWorkspacePage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#060814]" />}>
+      <EditorWorkspacePageContent />
+    </Suspense>
   );
 }

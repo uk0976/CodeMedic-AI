@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { TopBar } from "@/components/dashboard/top-bar";
 import { motion, AnimatePresence } from "framer-motion";
@@ -20,10 +20,13 @@ import {
   X,
   FileText,
   Copy,
+  ChevronRight,
   TrendingUp,
   Scale
 } from "lucide-react";
 import Link from "next/link";
+import { useSearchParams, useRouter } from "next/navigation";
+import { env } from "@/lib/env";
 
 interface Report {
   id: string;
@@ -46,7 +49,14 @@ interface Report {
   created_at: string;
 }
 
-export default function ReportsHistoryPage() {
+function ReportsHistoryPageContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const tourStep = searchParams.get("tour");
+
+  const skipTour = () => {
+    router.push("/reports");
+  };
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
@@ -68,7 +78,7 @@ export default function ReportsHistoryPage() {
   const fetchReports = async () => {
     try {
       setLoading(true);
-      const url = new URL("http://localhost:8000/api/v1/reports/");
+      const url = new URL(`${env.apiUrl}/api/v1/reports/`);
       if (search) url.searchParams.append("search", search);
       if (languageFilter && languageFilter !== "all") url.searchParams.append("language", languageFilter);
       if (sortBy) url.searchParams.append("sort_by", sortBy);
@@ -96,7 +106,7 @@ export default function ReportsHistoryPage() {
     if (!confirm("Are you sure you want to remove this report from history?")) return;
 
     try {
-      const res = await fetch(`http://localhost:8000/api/v1/reports/${id}`, {
+      const res = await fetch(`${env.apiUrl}/api/v1/reports/${id}`, {
         method: "DELETE",
       });
       if (res.ok) {
@@ -129,7 +139,7 @@ export default function ReportsHistoryPage() {
   const handleDuplicate = async (report: Report, e: React.MouseEvent) => {
     e.stopPropagation();
     try {
-      const res = await fetch("http://localhost:8000/api/v1/reports/", {
+      const res = await fetch(`${env.apiUrl}/api/v1/reports/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -150,7 +160,7 @@ export default function ReportsHistoryPage() {
   // Download Trigger
   const handleExport = (reportId: string, format: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    window.open(`http://localhost:8000/api/v1/reports/${reportId}/export/${format}`, "_blank");
+    window.open(`${env.apiUrl}/api/v1/reports/${reportId}/export/${format}`, "_blank");
   };
 
   // Aggregate statistics for the side-panel
@@ -496,7 +506,7 @@ export default function ReportsHistoryPage() {
                   <button
                     onClick={() => {
                       const latest = reports[0];
-                      window.open(`http://localhost:8000/api/v1/reports/${latest.id}/export/pdf`, "_blank");
+                      window.open(`${env.apiUrl}/api/v1/reports/${latest.id}/export/pdf`, "_blank");
                     }}
                     className="w-full flex items-center justify-center gap-2 rounded-xl bg-slate-800 hover:bg-slate-700 py-3 text-xs font-bold text-white border border-slate-700 transition"
                   >
@@ -914,6 +924,78 @@ export default function ReportsHistoryPage() {
           </div>
         )}
       </AnimatePresence>
+      {/* Guided Tour Tooltip Overlays */}
+      <AnimatePresence>
+        {tourStep && (
+          <div className="fixed inset-0 z-50 pointer-events-none">
+            {tourStep === "5" && (
+              <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 15 }}
+                className="pointer-events-auto absolute bottom-24 left-[280px] glass-panel max-w-sm w-full rounded-2xl border border-cyan-500/30 bg-slate-950/95 p-5 shadow-[0_0_50px_rgba(6,182,212,0.25)] flex flex-col space-y-3"
+              >
+                <div className="flex justify-between items-start">
+                  <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest">
+                    Tour • Step 5 of 6
+                  </span>
+                  <button onClick={skipTour} className="text-[10px] text-slate-500 hover:text-slate-350 transition font-bold">Skip</button>
+                </div>
+                <h3 className="text-xs font-bold text-white leading-tight">Reports Archival & History</h3>
+                <p className="text-[11px] text-slate-400 leading-relaxed">
+                  This archives every scan report, allowing search filters, deleting entries, duplicating audits, and comparing metrics.
+                </p>
+                <div className="flex justify-end pt-1">
+                  <button
+                    onClick={() => router.push("/reports?tour=6")}
+                    className="rounded-lg bg-cyan-500 hover:bg-cyan-600 px-3.5 py-1.5 text-[10px] font-bold text-white transition flex items-center gap-1"
+                  >
+                    Next: Export Formats
+                    <ChevronRight className="size-3" />
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {tourStep === "6" && (
+              <motion.div
+                initial={{ opacity: 0, x: 15 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 15 }}
+                className="pointer-events-auto absolute bottom-24 right-[420px] glass-panel max-w-sm w-full rounded-2xl border border-cyan-500/30 bg-slate-950/95 p-5 shadow-[0_0_50px_rgba(6,182,212,0.25)] flex flex-col space-y-3"
+              >
+                <div className="flex justify-between items-start">
+                  <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest">
+                    Tour • Step 6 of 6
+                  </span>
+                  <button onClick={skipTour} className="text-[10px] text-slate-500 hover:text-slate-350 transition font-bold">Skip</button>
+                </div>
+                <h3 className="text-xs font-bold text-white leading-tight">One-Click Multi-Format Export</h3>
+                <p className="text-[11px] text-slate-400 leading-relaxed">
+                  Export code audits to PDF, Markdown, and JSON, or download optimized code snippets, unit tests, and README files.
+                </p>
+                <div className="flex justify-end pt-1">
+                  <button
+                    onClick={skipTour}
+                    className="rounded-lg bg-cyan-500 hover:bg-cyan-600 px-3.5 py-1.5 text-[10px] font-bold text-white transition flex items-center gap-1"
+                  >
+                    Finish Tour
+                    <Check className="size-3" />
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </div>
+        )}
+      </AnimatePresence>
     </div>
+  );
+}
+
+export default function ReportsHistoryPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#060814]" />}>
+      <ReportsHistoryPageContent />
+    </Suspense>
   );
 }

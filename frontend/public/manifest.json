@@ -1,0 +1,16 @@
+{
+  "name": "CodeMedic AI",
+  "short_name": "CodeMedic",
+  "description": "Fix. Explain. Optimize. Powered by Codex.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#060814",
+  "theme_color": "#060814",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ]
+}
