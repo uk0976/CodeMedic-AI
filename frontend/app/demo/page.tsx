@@ -1,56 +1,128 @@
-import Link from "next/link";
-import { ArrowLeft, CheckCircle2, ShieldCheck, Sparkles } from "lucide-react";
+"use client";
 
-export const metadata = { title: "Evaluator Workspace" };
+import { useState } from "react";
+import { Sidebar } from "@/components/dashboard/sidebar";
+import { TopBar } from "@/components/dashboard/top-bar";
+import { StatsSection } from "@/components/dashboard/stats-section";
+import { RecentAnalyses } from "@/components/dashboard/recent-analyses";
+import { QuickActions } from "@/components/dashboard/quick-actions";
+import { LanguagesShowcase } from "@/components/dashboard/languages-showcase";
+import { RightPanel } from "@/components/dashboard/right-panel";
+import { motion } from "framer-motion";
+import { Play, Upload } from "lucide-react";
 
 export default function EvaluatorDemoPage() {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.08,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 15 },
+    show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 260, damping: 20 } },
+  };
+
   return (
-    <main className="surface-grid min-h-screen bg-[#0b1120] px-5 py-7 text-slate-100">
-      <div className="mx-auto max-w-6xl">
-        <div className="mb-12 flex items-center justify-between">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white"
+    <div className="min-h-screen bg-[#060814] text-slate-100 font-sans">
+      {/* Sidebar Panel */}
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+
+      {/* Main Workspace Frame */}
+      <div className="lg:pl-64 flex flex-col min-h-screen">
+        {/* Top bar header */}
+        <TopBar onMenuClick={() => setSidebarOpen(true)} />
+
+        {/* Content container */}
+        <main className="flex-1 p-5 md:p-8 max-w-[1600px] w-full mx-auto">
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="show"
+            className="grid grid-cols-1 xl:grid-cols-4 gap-6 items-start"
           >
-            <ArrowLeft className="size-4" /> Back to CodeMedic AI
-          </Link>
-          <span className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-xs font-medium text-cyan-200">
-            Hackathon evaluator access
-          </span>
-        </div>
-        <section className="glass-panel rounded-3xl p-8 sm:p-12">
-          <div className="mb-7 flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-400 shadow-lg shadow-cyan-500/20">
-            <Sparkles className="size-6" />
-          </div>
-          <p className="text-sm font-medium text-cyan-300">Evaluator workspace</p>
-          <h1 className="mt-3 max-w-2xl text-4xl font-semibold tracking-tight sm:text-5xl">
-            You&apos;re in. No login required.
-          </h1>
-          <p className="mt-5 max-w-xl text-lg leading-8 text-slate-400">
-            This dedicated workspace is reserved for hackathon reviewers. Product analysis workflows
-            will be enabled here in the next delivery phase.
-          </p>
-          <div className="mt-10 grid gap-4 sm:grid-cols-3">
-            {[
-              "No authentication gate",
-              "Isolated evaluator entry",
-              "Production-ready platform shell",
-            ].map((item) => (
-              <div
-                key={item}
-                className="rounded-2xl border border-slate-700/70 bg-slate-900/70 p-5 text-sm text-slate-300"
+            {/* Left and Middle Workspace Elements */}
+            <div className="xl:col-span-3 space-y-7">
+              {/* Main Hero Header Card */}
+              <motion.div 
+                variants={itemVariants}
+                className="glass-panel relative overflow-hidden rounded-3xl p-6 sm:p-8 border border-slate-800/80 bg-gradient-to-br from-slate-900/60 via-slate-950/40 to-cyan-950/10"
               >
-                <CheckCircle2 className="mb-3 size-5 text-emerald-400" />
-                {item}
-              </div>
-            ))}
-          </div>
-          <div className="mt-10 flex items-center gap-2 text-sm text-slate-500">
-            <ShieldCheck className="size-4 text-emerald-400" /> Evaluator route is publicly
-            accessible by design.
-          </div>
-        </section>
+                {/* Decorative gradients */}
+                <div className="absolute top-0 right-0 w-80 h-80 bg-cyan-500/10 rounded-full blur-[100px] pointer-events-none" />
+                <div className="absolute bottom-0 right-1/4 w-60 h-60 bg-blue-600/5 rounded-full blur-[80px] pointer-events-none" />
+
+                <div className="relative z-10 max-w-2xl">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3.5 py-1 text-xs font-semibold text-cyan-300">
+                    <span className="size-1.5 rounded-full bg-cyan-400 animate-ping" />
+                    Evaluator Session Active
+                  </div>
+                  <h1 className="mt-5 text-3xl font-extrabold tracking-tight sm:text-4xl bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
+                    Welcome back 👋
+                  </h1>
+                  <p className="mt-3 text-sm text-slate-400 leading-relaxed max-w-xl">
+                    Ready to debug smarter? CodeMedic AI helps you fix code flaws, optimize performance bottlenecks, write tests, and harden application security in real-time.
+                  </p>
+                  
+                  {/* Action buttons */}
+                  <div className="mt-6 flex flex-wrap gap-3">
+                    <button
+                      type="button"
+                      onClick={() => alert("Analyze Code action triggered")}
+                      className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 px-5 py-3 text-xs font-bold text-white shadow-lg shadow-blue-500/10 hover:brightness-115 transition"
+                    >
+                      <Play className="size-3.5 fill-white text-white" />
+                      <span>Analyze New Code</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => alert("Upload File action triggered")}
+                      className="inline-flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-900/40 px-5 py-3 text-xs font-bold text-slate-300 hover:border-slate-700 hover:text-white transition"
+                    >
+                      <Upload className="size-3.5" />
+                      <span>Upload File</span>
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Statistics Cards */}
+              <motion.div variants={itemVariants}>
+                <StatsSection />
+              </motion.div>
+
+              {/* Quick Actions Grid */}
+              <motion.div variants={itemVariants}>
+                <QuickActions />
+              </motion.div>
+
+              {/* Recent Analyses List */}
+              <motion.div variants={itemVariants}>
+                <RecentAnalyses />
+              </motion.div>
+
+              {/* Supported Languages Showcase */}
+              <motion.div variants={itemVariants}>
+                <LanguagesShowcase />
+              </motion.div>
+            </div>
+
+            {/* Right Insights Sidebar Panel */}
+            <motion.div 
+              variants={itemVariants}
+              className="space-y-6"
+            >
+              <RightPanel />
+            </motion.div>
+          </motion.div>
+        </main>
       </div>
-    </main>
+    </div>
   );
 }
