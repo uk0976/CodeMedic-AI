@@ -16,6 +16,7 @@ backend/.ruff_cache/
 backend/htmlcov/
 backend/.coverage
 backend/*.egg-info/
+*.db
 .DS_Store
 Thumbs.db
 .idea/
