@@ -17,6 +17,12 @@ class Settings(BaseSettings):
     jwt_secret_key: SecretStr
     jwt_algorithm: str = "HS256"
     jwt_access_token_expire_minutes: int = 30
+    jwt_refresh_token_expire_days: int = 14
+    auth_cookie_name: str = "codemedic_refresh_token"
+    auth_cookie_secure: bool = False
+    auth_cookie_samesite: Literal["lax", "strict", "none"] = "lax"
+    demo_account_email: str = "evaluator@codemedic.ai"
+    demo_account_password: SecretStr = SecretStr("change-this-demo-password-in-production")
     openai_api_key: SecretStr | None = None
 
     @field_validator("backend_cors_origins", mode="before")

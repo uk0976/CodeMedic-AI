@@ -13,6 +13,7 @@ dependencies = [
   "openai>=1.61.1",
   "psycopg[binary]>=3.2.4",
   "pydantic-settings>=2.7.1",
+  "pwdlib[argon2]>=0.2.1",
   "PyJWT>=2.10.1",
   "sqlalchemy>=2.0.37",
   "uvicorn[standard]>=0.34.0"
