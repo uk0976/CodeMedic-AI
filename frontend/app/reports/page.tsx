@@ -3,6 +3,8 @@
 import { useState, useEffect, Suspense } from "react";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { TopBar } from "@/components/dashboard/top-bar";
+import { SettingsModal } from "@/components/dashboard/settings-modal";
+import { DocsModal } from "@/components/dashboard/docs-modal";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
@@ -58,6 +60,8 @@ function ReportsHistoryPageContent() {
     router.push("/reports");
   };
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isDocsOpen, setIsDocsOpen] = useState(false);
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -192,10 +196,30 @@ function ReportsHistoryPageContent() {
 
   return (
     <div className="min-h-screen bg-[#060814] font-sans text-slate-100">
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      {/* Settings Modal */}
+      <AnimatePresence>
+        {isSettingsOpen && (
+          <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+        )}
+      </AnimatePresence>
+
+      {/* Docs Modal */}
+      <AnimatePresence>
+        {isDocsOpen && <DocsModal isOpen={isDocsOpen} onClose={() => setIsDocsOpen(false)} />}
+      </AnimatePresence>
+
+      <Sidebar
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        onOpenSettings={() => setIsSettingsOpen(true)}
+        onOpenDocs={() => setIsDocsOpen(true)}
+      />
 
       <div className="flex min-h-screen flex-col lg:pl-64">
-        <TopBar onMenuClick={() => setSidebarOpen(true)} />
+        <TopBar
+          onMenuClick={() => setSidebarOpen(true)}
+          onOpenSettings={() => setIsSettingsOpen(true)}
+        />
 
         <main className="mx-auto w-full max-w-[1600px] flex-1 p-5 md:p-8">
           {/* Main Layout Grid */}

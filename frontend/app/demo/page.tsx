@@ -8,12 +8,16 @@ import { RecentAnalyses } from "@/components/dashboard/recent-analyses";
 import { QuickActions } from "@/components/dashboard/quick-actions";
 import { LanguagesShowcase } from "@/components/dashboard/languages-showcase";
 import { RightPanel } from "@/components/dashboard/right-panel";
+import { SettingsModal } from "@/components/dashboard/settings-modal";
+import { DocsModal } from "@/components/dashboard/docs-modal";
 import { motion, AnimatePresence } from "framer-motion";
 import { Play, Upload, ChevronRight } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 
 function EvaluatorDemoPageContent() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isDocsOpen, setIsDocsOpen] = useState(false);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -93,13 +97,33 @@ function EvaluatorDemoPageContent() {
         )}
       </AnimatePresence>
 
+      {/* Settings Modal */}
+      <AnimatePresence>
+        {isSettingsOpen && (
+          <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+        )}
+      </AnimatePresence>
+
+      {/* Docs Modal */}
+      <AnimatePresence>
+        {isDocsOpen && <DocsModal isOpen={isDocsOpen} onClose={() => setIsDocsOpen(false)} />}
+      </AnimatePresence>
+
       {/* Sidebar Panel */}
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        onOpenSettings={() => setIsSettingsOpen(true)}
+        onOpenDocs={() => setIsDocsOpen(true)}
+      />
 
       {/* Main Workspace Frame */}
       <div className="flex min-h-screen flex-col lg:pl-64">
         {/* Top bar header */}
-        <TopBar onMenuClick={() => setSidebarOpen(true)} />
+        <TopBar
+          onMenuClick={() => setSidebarOpen(true)}
+          onOpenSettings={() => setIsSettingsOpen(true)}
+        />
 
         {/* Content container */}
         <main className="mx-auto w-full max-w-[1600px] flex-1 p-5 md:p-8">
@@ -138,7 +162,7 @@ function EvaluatorDemoPageContent() {
                   <div className="mt-6 flex flex-wrap gap-3">
                     <button
                       type="button"
-                      onClick={() => alert("Analyze Code action triggered")}
+                      onClick={() => router.push("/analyze")}
                       className="hover:brightness-115 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 px-5 py-3 text-xs font-bold text-white shadow-lg shadow-blue-500/10 transition"
                     >
                       <Play className="size-3.5 fill-white text-white" />
@@ -146,7 +170,7 @@ function EvaluatorDemoPageContent() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => alert("Upload File action triggered")}
+                      onClick={() => router.push("/analyze")}
                       className="inline-flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-900/40 px-5 py-3 text-xs font-bold text-slate-300 transition hover:border-slate-700 hover:text-white"
                     >
                       <Upload className="size-3.5" />
