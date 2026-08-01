@@ -30,16 +30,20 @@ class GroqProvider(BaseAIProvider):
         timeout: float = 30.0,
     ) -> T:
         logger.info("Calling GroqProvider (llama-3.3-70b-versatile)...")
-        response = self.client.beta.chat.completions.parse(
+        response = self.client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[
-                {"role": "system", "content": system_prompt},
+                {
+                    "role": "system",
+                    "content": system_prompt
+                    + "\n\nRespond ONLY with a valid JSON object matching the requested schema.",
+                },
                 {"role": "user", "content": user_prompt},
             ],
-            response_format=response_format,
+            response_format={"type": "json_object"},
             timeout=timeout,
         )
-        parsed = response.choices[0].message.parsed
-        if parsed is None:
+        content = response.choices[0].message.content
+        if not content:
             raise ValueError("Failed to parse response from Groq.")
-        return parsed
+        return response_format.model_validate_json(content)

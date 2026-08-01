@@ -9,6 +9,7 @@ from fastapi.responses import StreamingResponse
 
 from app.schemas.analysis import AnalysisRequestSchema
 from app.services.analysis import AnalysisService
+from app.services.providers.local_provider import LocalFallbackProvider
 
 logger = logging.getLogger(__name__)
 
@@ -45,13 +46,11 @@ async def analysis_stream_generator(
 
         yield f"data: {json.dumps({'result': result.model_dump()})}\n\n"
 
-    except ValueError as ve:
-        # Missing config
-        yield f"data: {json.dumps({'error': str(ve)})}\n\n"
     except Exception as e:
-        logger.error(f"Unexpected error in streaming analysis: {e}")
-        err_msg = {"error": "An internal error occurred during code analysis."}
-        yield f"data: {json.dumps(err_msg)}\n\n"
+        logger.error(f"Error in streaming analysis: {e}. Executing local fallback engine.")
+        fallback = LocalFallbackProvider()
+        result = fallback.analyze(code, language)
+        yield f"data: {json.dumps({'result': result.model_dump()})}\n\n"
 
 
 @router.post("/analyze")
