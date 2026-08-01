@@ -748,7 +748,7 @@ export function FullAnalysisReport({
             </div>
           )}
 
-          <div className="h-[450px] overflow-hidden rounded-xl border border-slate-800">
+          <div className="h-[500px] w-full overflow-hidden rounded-xl border border-slate-800 bg-slate-950">
             <DiffEditor
               height="100%"
               original={originalCode}
@@ -761,6 +761,17 @@ export function FullAnalysisReport({
                 fontSize: 13,
                 scrollBeyondLastLine: false,
                 renderSideBySide: true,
+                automaticLayout: true,
+                wordWrap: "on",
+                wrappingStrategy: "advanced",
+                scrollBeyondLastColumn: 5,
+                scrollbar: {
+                  vertical: "visible",
+                  horizontal: "visible",
+                  useShadows: false,
+                  verticalScrollbarSize: 10,
+                  horizontalScrollbarSize: 10,
+                },
               }}
             />
           </div>
