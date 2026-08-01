@@ -1,12 +1,6 @@
 "use client";
 
-import { 
-  Play, 
-  Upload, 
-  Clipboard, 
-  Binary, 
-  ShieldCheck 
-} from "lucide-react";
+import { Play, Upload, Clipboard, Binary, ShieldCheck } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface QuickAction {
@@ -30,28 +24,32 @@ export function QuickActions() {
       label: "Upload File",
       description: "Upload local source files for analysis",
       icon: Upload,
-      color: "from-slate-900 to-slate-900 border-slate-800 text-slate-300 hover:border-slate-700 hover:text-white",
+      color:
+        "from-slate-900 to-slate-900 border-slate-800 text-slate-300 hover:border-slate-700 hover:text-white",
       onClick: () => alert("Upload File triggered (In next phase)"),
     },
     {
       label: "Paste Code",
       description: "Quickly copy-paste code snippets",
       icon: Clipboard,
-      color: "from-slate-900 to-slate-900 border-slate-800 text-slate-300 hover:border-slate-700 hover:text-white",
+      color:
+        "from-slate-900 to-slate-900 border-slate-800 text-slate-300 hover:border-slate-700 hover:text-white",
       onClick: () => alert("Paste Code triggered (In next phase)"),
     },
     {
       label: "Generate Tests",
       description: "Auto-generate unit tests using AI",
       icon: Binary,
-      color: "from-slate-900 to-slate-900 border-slate-800 text-slate-300 hover:border-slate-700 hover:text-white",
+      color:
+        "from-slate-900 to-slate-900 border-slate-800 text-slate-300 hover:border-slate-700 hover:text-white",
       onClick: () => alert("Generate Tests triggered (In next phase)"),
     },
     {
       label: "Security Scan",
       description: "Check code for vulnerabilities & secrets",
       icon: ShieldCheck,
-      color: "from-slate-900 to-slate-900 border-slate-800 text-slate-300 hover:border-slate-700 hover:text-white",
+      color:
+        "from-slate-900 to-slate-900 border-slate-800 text-slate-300 hover:border-slate-700 hover:text-white",
       onClick: () => alert("Security Scan triggered (In next phase)"),
     },
   ];
@@ -68,12 +66,18 @@ export function QuickActions() {
 
   const itemVariants = {
     hidden: { opacity: 0, scale: 0.95 },
-    show: { opacity: 1, scale: 1, transition: { type: "spring" as const, stiffness: 300, damping: 22 } },
+    show: {
+      opacity: 1,
+      scale: 1,
+      transition: { type: "spring" as const, stiffness: 300, damping: 22 },
+    },
   };
 
   return (
     <div>
-      <h2 className="mb-4 text-sm font-bold text-white uppercase tracking-wider text-slate-500">Quick Actions</h2>
+      <h2 className="mb-4 text-sm font-bold uppercase tracking-wider text-slate-500 text-white">
+        Quick Actions
+      </h2>
       <motion.div
         variants={containerVariants}
         initial="hidden"
@@ -90,21 +94,29 @@ export function QuickActions() {
               variants={itemVariants}
               whileHover={{ y: -3, scale: 1.01 }}
               onClick={action.onClick}
-              className={`flex flex-col text-left rounded-2xl p-5 border transition-all ${
-                isPrimary 
-                  ? `bg-gradient-to-r ${action.color} border-transparent` 
-                  : "bg-slate-900/40 border-slate-800/80 hover:bg-slate-900/60"
+              className={`flex flex-col rounded-2xl border p-5 text-left transition-all ${
+                isPrimary
+                  ? `bg-gradient-to-r ${action.color} border-transparent`
+                  : "border-slate-800/80 bg-slate-900/40 hover:bg-slate-900/60"
               }`}
             >
-              <div className={`mb-4 flex size-9 items-center justify-center rounded-xl ${
-                isPrimary ? "bg-white/20" : "bg-slate-800/50 text-cyan-400 border border-slate-700/30"
-              }`}>
+              <div
+                className={`mb-4 flex size-9 items-center justify-center rounded-xl ${
+                  isPrimary
+                    ? "bg-white/20"
+                    : "border border-slate-700/30 bg-slate-800/50 text-cyan-400"
+                }`}
+              >
                 <Icon className="size-4.5" />
               </div>
-              <h3 className={`text-xs font-bold leading-none ${isPrimary ? "text-white" : "text-slate-200"}`}>
+              <h3
+                className={`text-xs font-bold leading-none ${isPrimary ? "text-white" : "text-slate-200"}`}
+              >
                 {action.label}
               </h3>
-              <p className={`mt-2 text-[10px] leading-normal ${isPrimary ? "text-cyan-100" : "text-slate-500"}`}>
+              <p
+                className={`mt-2 text-[10px] leading-normal ${isPrimary ? "text-cyan-100" : "text-slate-500"}`}
+              >
                 {action.description}
               </p>
             </motion.button>

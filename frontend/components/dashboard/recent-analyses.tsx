@@ -1,10 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { 
-  FileCode, 
-  ExternalLink
-} from "lucide-react";
+import { FileCode, ExternalLink } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface Analysis {
@@ -62,9 +59,8 @@ export function RecentAnalyses() {
     },
   ];
 
-  const filteredAnalyses = filter === "All" 
-    ? analyses 
-    : analyses.filter(a => a.status === filter);
+  const filteredAnalyses =
+    filter === "All" ? analyses : analyses.filter((a) => a.status === filter);
 
   const getStatusStyle = (status: Analysis["status"]) => {
     switch (status) {
@@ -79,12 +75,18 @@ export function RecentAnalyses() {
 
   const getLanguageColor = (lang: string) => {
     switch (lang) {
-      case "Python": return "text-blue-400 bg-blue-500/5 border-blue-500/20";
-      case "Java": return "text-orange-400 bg-orange-500/5 border-orange-500/20";
-      case "TypeScript": return "text-cyan-400 bg-cyan-500/5 border-cyan-500/20";
-      case "C++": return "text-pink-400 bg-pink-500/5 border-pink-500/20";
-      case "Go": return "text-teal-400 bg-teal-500/5 border-teal-500/20";
-      default: return "text-slate-400 bg-slate-500/5 border-slate-500/20";
+      case "Python":
+        return "text-blue-400 bg-blue-500/5 border-blue-500/20";
+      case "Java":
+        return "text-orange-400 bg-orange-500/5 border-orange-500/20";
+      case "TypeScript":
+        return "text-cyan-400 bg-cyan-500/5 border-cyan-500/20";
+      case "C++":
+        return "text-pink-400 bg-pink-500/5 border-pink-500/20";
+      case "Go":
+        return "text-teal-400 bg-teal-500/5 border-teal-500/20";
+      default:
+        return "text-slate-400 bg-slate-500/5 border-slate-500/20";
     }
   };
 
@@ -93,7 +95,7 @@ export function RecentAnalyses() {
       <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
           <h2 className="text-base font-bold text-white">Recent Analyses</h2>
-          <p className="text-xs text-slate-400 leading-normal mt-0.5">
+          <p className="mt-0.5 text-xs leading-normal text-slate-400">
             A history of recent diagnostics run on your codebase.
           </p>
         </div>
@@ -106,8 +108,8 @@ export function RecentAnalyses() {
               type="button"
               onClick={() => setFilter(status)}
               className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
-                filter === status 
-                  ? "bg-slate-800 text-white" 
+                filter === status
+                  ? "bg-slate-800 text-white"
                   : "text-slate-500 hover:text-slate-300"
               }`}
             >
@@ -142,45 +144,50 @@ export function RecentAnalyses() {
                 {/* File Name */}
                 <td className="py-4.5 font-medium text-slate-200">
                   <div className="flex items-center gap-2.5">
-                    <FileCode className="size-4 text-slate-400 group-hover:text-cyan-400 transition-colors" />
+                    <FileCode className="size-4 text-slate-400 transition-colors group-hover:text-cyan-400" />
                     <span>{analysis.fileName}</span>
                   </div>
                 </td>
 
                 {/* Language */}
                 <td className="py-4.5">
-                  <span className={`inline-flex items-center rounded-lg border px-2 py-0.5 font-medium text-[11px] ${getLanguageColor(analysis.language)}`}>
+                  <span
+                    className={`inline-flex items-center rounded-lg border px-2 py-0.5 text-[11px] font-medium ${getLanguageColor(analysis.language)}`}
+                  >
                     {analysis.language}
                   </span>
                 </td>
 
                 {/* Analysis Type */}
-                <td className="py-4.5 text-slate-400 font-medium">
-                  {analysis.type}
-                </td>
+                <td className="py-4.5 font-medium text-slate-400">{analysis.type}</td>
 
                 {/* Status */}
                 <td className="py-4.5">
-                  <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 font-semibold text-[10px] ${getStatusStyle(analysis.status)}`}>
-                    <span className={`size-1.5 rounded-full ${
-                      analysis.status === "Completed" ? "bg-emerald-400" :
-                      analysis.status === "Running" ? "bg-cyan-400 animate-pulse" : "bg-red-400"
-                    }`} />
+                  <span
+                    className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-semibold ${getStatusStyle(analysis.status)}`}
+                  >
+                    <span
+                      className={`size-1.5 rounded-full ${
+                        analysis.status === "Completed"
+                          ? "bg-emerald-400"
+                          : analysis.status === "Running"
+                            ? "animate-pulse bg-cyan-400"
+                            : "bg-red-400"
+                      }`}
+                    />
                     {analysis.status}
                   </span>
                 </td>
 
                 {/* Date */}
-                <td className="py-4.5 text-slate-500 font-medium">
-                  {analysis.date}
-                </td>
+                <td className="py-4.5 font-medium text-slate-500">{analysis.date}</td>
 
                 {/* Open Report */}
                 <td className="py-4.5 text-right">
                   <button
                     type="button"
                     onClick={() => alert(`Opening report for ${analysis.fileName} (In next phase)`)}
-                    className="inline-flex items-center gap-1 rounded-lg border border-slate-800 bg-slate-900/40 px-2.5 py-1.5 font-semibold text-slate-400 hover:border-slate-700 hover:bg-slate-800 hover:text-white transition"
+                    className="inline-flex items-center gap-1 rounded-lg border border-slate-800 bg-slate-900/40 px-2.5 py-1.5 font-semibold text-slate-400 transition hover:border-slate-700 hover:bg-slate-800 hover:text-white"
                   >
                     <span>View</span>
                     <ExternalLink className="size-3" />
@@ -191,7 +198,7 @@ export function RecentAnalyses() {
 
             {filteredAnalyses.length === 0 && (
               <tr>
-                <td colSpan={6} className="py-10 text-center text-slate-500 font-medium">
+                <td colSpan={6} className="py-10 text-center font-medium text-slate-500">
                   No analyses found with status: &quot;{filter}&quot;
                 </td>
               </tr>

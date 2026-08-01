@@ -12,9 +12,12 @@ settings = get_settings()
 
 T = TypeVar("T", bound=BaseModel)
 
+
 class OpenAIProvider(BaseAIProvider):
     def __init__(self, api_key: str | None = None) -> None:
-        key = api_key or (settings.openai_api_key.get_secret_value() if settings.openai_api_key else None)
+        key = api_key or (
+            settings.openai_api_key.get_secret_value() if settings.openai_api_key else None
+        )
         if not key:
             raise ValueError("OPENAI_API_KEY is not configured.")
         self.client = OpenAI(api_key=key)
@@ -24,12 +27,11 @@ class OpenAIProvider(BaseAIProvider):
         system_prompt: str,
         user_prompt: str,
         response_format: type[T],
-        model: str = "gpt-4o-mini",
-        max_retries: int = 3,
-        initial_delay: float = 1.0,
         timeout: float = 30.0,
     ) -> T:
-        delay = initial_delay
+        model = "gpt-4o-mini"
+        max_retries = 3
+        delay = 1.0
         for attempt in range(max_retries):
             try:
                 logger.info(f"OpenAIProvider attempt {attempt + 1}/{max_retries} (Model: {model})")

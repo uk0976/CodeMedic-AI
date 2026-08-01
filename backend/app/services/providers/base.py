@@ -1,8 +1,10 @@
 from abc import ABC, abstractmethod
 from typing import TypeVar
+
 from pydantic import BaseModel
 
 T = TypeVar("T", bound=BaseModel)
+
 
 class BaseAIProvider(ABC):
     @abstractmethod

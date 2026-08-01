@@ -26,8 +26,10 @@ export function LanguagesShowcase() {
 
   return (
     <div className="glass-panel rounded-2xl border border-slate-800/80 bg-slate-900/40 p-6">
-      <h2 className="text-sm font-bold text-white uppercase tracking-wider text-slate-500 mb-4">Supported Languages</h2>
-      
+      <h2 className="mb-4 text-sm font-bold uppercase tracking-wider text-slate-500 text-white">
+        Supported Languages
+      </h2>
+
       <div className="flex flex-wrap gap-2.5">
         {languages.map((lang, index) => (
           <motion.div

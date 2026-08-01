@@ -2,15 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { 
-  LayoutDashboard, 
-  Code2, 
-  BarChart3, 
-  Settings as SettingsIcon, 
-  Github, 
+import {
+  LayoutDashboard,
+  Code2,
+  BarChart3,
+  Settings as SettingsIcon,
+  Github,
   FileText,
   X,
-  Sparkles
+  Sparkles,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -30,13 +30,26 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   ];
 
   const secondaryNavItems = [
-    { label: "GitHub", href: "https://github.com/uk0976/CodeMedic-AI", icon: Github, external: true },
+    {
+      label: "GitHub",
+      href: "https://github.com/uk0976/CodeMedic-AI",
+      icon: Github,
+      external: true,
+    },
     { label: "Documentation", href: "#docs", icon: FileText },
   ];
 
   const sidebarVariants = {
-    open: { x: 0, opacity: 1, transition: { type: "spring" as const, stiffness: 300, damping: 30 } },
-    closed: { x: "-100%", opacity: 0, transition: { type: "spring" as const, stiffness: 300, damping: 30 } }
+    open: {
+      x: 0,
+      opacity: 1,
+      transition: { type: "spring" as const, stiffness: 300, damping: 30 },
+    },
+    closed: {
+      x: "-100%",
+      opacity: 0,
+      transition: { type: "spring" as const, stiffness: 300, damping: 30 },
+    },
   };
 
   const SidebarContent = () => (
@@ -50,14 +63,14 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             </div>
             <div>
               <span className="text-base font-bold tracking-tight text-white">CodeMedic</span>
-              <span className="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-[10px] font-medium text-transparent block -mt-1">
+              <span className="-mt-1 block bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-[10px] font-medium text-transparent">
                 AI CO-PILOT
               </span>
             </div>
           </Link>
-          <button 
-            type="button" 
-            onClick={onClose} 
+          <button
+            type="button"
+            onClick={onClose}
             className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white lg:hidden"
             aria-label="Close sidebar"
           >
@@ -67,7 +80,9 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
         {/* Main Navigation */}
         <div className="space-y-1.5">
-          <p className="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-500">Workspace</p>
+          <p className="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+            Workspace
+          </p>
           {mainNavItems.map((item) => {
             const isActive = pathname === item.href;
             const Icon = item.icon;
@@ -79,8 +94,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                   if (window.innerWidth < 1024) onClose();
                 }}
                 className={`relative flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition duration-200 ${
-                  isActive 
-                    ? "text-cyan-400" 
+                  isActive
+                    ? "text-cyan-400"
                     : "text-slate-400 hover:bg-slate-900/60 hover:text-slate-100"
                 }`}
               >
@@ -91,10 +106,12 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                     transition={{ type: "spring", stiffness: 380, damping: 30 }}
                   />
                 )}
-                <Icon className={`size-4.5 z-10 ${isActive ? "text-cyan-400" : "text-slate-400"}`} />
+                <Icon
+                  className={`size-4.5 z-10 ${isActive ? "text-cyan-400" : "text-slate-400"}`}
+                />
                 <span className="z-10">{item.label}</span>
                 {item.label === "Analyze Code" && (
-                  <span className="ml-auto z-10 rounded-full bg-cyan-500/10 border border-cyan-400/20 px-1.5 py-0.5 text-[9px] font-semibold text-cyan-300">
+                  <span className="z-10 ml-auto rounded-full border border-cyan-400/20 bg-cyan-500/10 px-1.5 py-0.5 text-[9px] font-semibold text-cyan-300">
                     Live
                   </span>
                 )}
@@ -107,7 +124,9 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       {/* Secondary / Footer Navigation */}
       <div className="space-y-6">
         <div className="space-y-1.5">
-          <p className="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-500">Resources</p>
+          <p className="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+            Resources
+          </p>
           {secondaryNavItems.map((item) => {
             const Icon = item.icon;
             return (
@@ -128,10 +147,10 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         {/* Demo Mode Badge */}
         <div className="rounded-2xl border border-slate-800/80 bg-slate-900/40 p-4">
           <div className="flex items-center gap-2">
-            <div className="size-2 rounded-full bg-cyan-400 animate-pulse" />
+            <div className="size-2 animate-pulse rounded-full bg-cyan-400" />
             <span className="text-xs font-semibold text-slate-300">Live Demo Session</span>
           </div>
-          <p className="mt-1 text-[11px] text-slate-500 leading-normal">
+          <p className="mt-1 text-[11px] leading-normal text-slate-500">
             No login credentials required. All workspace capabilities are pre-authorized.
           </p>
         </div>
@@ -148,7 +167,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
       {/* Mobile Drawer Backdrop */}
       {isOpen && (
-        <div 
+        <div
           onClick={onClose}
           className="fixed inset-0 z-40 bg-slate-950/60 backdrop-blur-sm lg:hidden"
         />

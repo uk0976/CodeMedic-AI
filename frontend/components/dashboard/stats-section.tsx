@@ -1,13 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { 
-  Code2, 
-  Bug, 
-  ShieldAlert, 
-  FileText,
-  ArrowUpRight
-} from "lucide-react";
+import { Code2, Bug, ShieldAlert, FileText, ArrowUpRight } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface StatItem {
@@ -96,7 +90,11 @@ export function StatsSection() {
 
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 260, damping: 20 } },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: { type: "spring" as const, stiffness: 260, damping: 20 },
+    },
   };
 
   return (
@@ -116,11 +114,15 @@ export function StatsSection() {
             className={`glass-panel relative overflow-hidden rounded-2xl border bg-slate-900/40 p-5`}
           >
             {/* Soft decorative background glow */}
-            <div className={`absolute -right-6 -top-6 size-24 rounded-full bg-gradient-to-br ${stat.color} opacity-[0.06] blur-2xl`} />
+            <div
+              className={`absolute -right-6 -top-6 size-24 rounded-full bg-gradient-to-br ${stat.color} opacity-[0.06] blur-2xl`}
+            />
 
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-slate-400">{stat.label}</span>
-              <div className={`flex size-8.5 items-center justify-center rounded-xl bg-gradient-to-br ${stat.color} border`}>
+              <div
+                className={`size-8.5 flex items-center justify-center rounded-xl bg-gradient-to-br ${stat.color} border`}
+              >
                 <Icon className="size-4.5" />
               </div>
             </div>
@@ -133,14 +135,18 @@ export function StatsSection() {
             </div>
 
             <div className="mt-3 flex items-center justify-between border-t border-slate-800/60 pt-3">
-              <span className={`text-[10px] font-medium ${
-                stat.changeType === "increase" ? "text-emerald-400" : "text-amber-400"
-              }`}>
+              <span
+                className={`text-[10px] font-medium ${
+                  stat.changeType === "increase" ? "text-emerald-400" : "text-amber-400"
+                }`}
+              >
                 {stat.change}
               </span>
-              <ArrowUpRight className={`size-3.5 ${
-                stat.changeType === "increase" ? "text-emerald-500/50" : "text-amber-500/50"
-              } ${stat.changeType === "decrease" ? "rotate-90" : ""}`} />
+              <ArrowUpRight
+                className={`size-3.5 ${
+                  stat.changeType === "increase" ? "text-emerald-500/50" : "text-amber-500/50"
+                } ${stat.changeType === "decrease" ? "rotate-90" : ""}`}
+              />
             </div>
           </motion.div>
         );

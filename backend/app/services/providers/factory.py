@@ -1,13 +1,15 @@
 import logging
 import os
+
 from app.core.config import get_settings
 from app.services.providers.base import BaseAIProvider
+from app.services.providers.gemini_provider import GeminiProvider
 from app.services.providers.local_provider import LocalFallbackProvider
 from app.services.providers.openai_provider import OpenAIProvider
-from app.services.providers.gemini_provider import GeminiProvider
 
 logger = logging.getLogger(__name__)
 settings = get_settings()
+
 
 def get_ai_provider() -> BaseAIProvider:
     """

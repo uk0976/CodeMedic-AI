@@ -1,22 +1,25 @@
-import json
 from fastapi.testclient import TestClient
+
 from app.main import app
 from app.services.providers.local_provider import LocalFallbackProvider
 
 client = TestClient(app)
+
 
 def test_health_check():
     response = client.get("/health")
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
 
+
 def test_analyze_code_empty_validation():
     response = client.post(
         "/api/v1/analysis/analyze",
-        json={"code": "", "language": "python", "analysis_types": ["Bug Detection"]}
+        json={"code": "", "language": "python", "analysis_types": ["Bug Detection"]},
     )
     assert response.status_code == 400
     assert "cannot be empty" in response.json()["detail"]
+
 
 def test_dynamic_math_scoring_vulnerable_code():
     # Intentionally bad code with SQL injection, hardcoded secret, nested loops
@@ -31,7 +34,7 @@ def get_user(user_id):
 """
     provider = LocalFallbackProvider()
     res = provider.analyze(bad_code, "python")
-    
+
     # Verify dynamic score deductions
     assert res.code_health_score < 60
     assert res.security_score < 70
@@ -41,6 +44,7 @@ def get_user(user_id):
     assert "O(N^2)" in res.complexity.time
     assert res.code_explanation is not None
     assert "SQL Injection" in res.summary or "critical" in res.summary.lower()
+
 
 def test_dynamic_math_scoring_clean_code():
     clean_code = """

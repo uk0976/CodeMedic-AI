@@ -19,7 +19,7 @@ export function EditorStatusBar({
   totalChars,
   encoding,
   lineEndings,
-  status
+  status,
 }: EditorStatusBarProps) {
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -38,7 +38,7 @@ export function EditorStatusBar({
   };
 
   return (
-    <footer className="flex h-8 w-full items-center justify-between border-t border-slate-900 bg-slate-950 px-4 text-[10px] font-semibold text-slate-500 tracking-wide select-none">
+    <footer className="flex h-8 w-full select-none items-center justify-between border-t border-slate-900 bg-slate-950 px-4 text-[10px] font-semibold tracking-wide text-slate-500">
       {/* Left section: Editor status indicator */}
       <div className="flex items-center gap-2">
         <span className={`relative flex size-2 rounded-full shadow-sm ${getStatusColor(status)}`} />
@@ -51,12 +51,8 @@ export function EditorStatusBar({
         <span className="px-3">
           Ln {cursorLine}, Col {cursorCol}
         </span>
-        <span className="px-3">
-          {totalLines} lines
-        </span>
-        <span className="px-3">
-          {totalChars.toLocaleString()} chars
-        </span>
+        <span className="px-3">{totalLines} lines</span>
+        <span className="px-3">{totalChars.toLocaleString()} chars</span>
         <span className="px-3">{encoding}</span>
         <span className="px-3">{lineEndings}</span>
       </div>

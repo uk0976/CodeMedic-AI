@@ -1,15 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { 
-  Search, 
-  Menu, 
-  ChevronDown, 
-  Cpu, 
-  Moon, 
-  Sun,
-  Activity
-} from "lucide-react";
+import { Search, Menu, ChevronDown, Cpu, Moon, Sun, Activity } from "lucide-react";
 
 interface TopBarProps {
   onMenuClick: () => void;
@@ -20,11 +12,7 @@ export function TopBar({ onMenuClick }: TopBarProps) {
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
   const [isDarkTheme, setIsDarkTheme] = useState(true);
 
-  const models = [
-    "Gemini 3.5 Flash",
-    "Gemini 3.5 Pro",
-    "OpenAI Codex (Default)"
-  ];
+  const models = ["Gemini 3.5 Flash", "Gemini 3.5 Pro", "OpenAI Codex (Default)"];
 
   return (
     <header className="sticky top-0 z-20 flex h-16 w-full items-center justify-between border-b border-slate-800/80 bg-slate-950/60 px-6 backdrop-blur-md">
@@ -39,7 +27,7 @@ export function TopBar({ onMenuClick }: TopBarProps) {
           <Menu className="size-5" />
         </button>
 
-        <div className="relative max-w-md flex-1 hidden md:block">
+        <div className="relative hidden max-w-md flex-1 md:block">
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
@@ -50,7 +38,7 @@ export function TopBar({ onMenuClick }: TopBarProps) {
       </div>
 
       {/* Utilities */}
-      <div className="flex items-center gap-4.5">
+      <div className="gap-4.5 flex items-center">
         {/* Status indicator */}
         <div className="hidden items-center gap-2 rounded-full border border-emerald-500/10 bg-emerald-500/5 px-3 py-1 text-[11px] font-semibold text-emerald-400 lg:flex">
           <Activity className="size-3.5 text-emerald-400" />
@@ -71,11 +59,8 @@ export function TopBar({ onMenuClick }: TopBarProps) {
 
           {isModelDropdownOpen && (
             <>
-              <div 
-                className="fixed inset-0 z-10" 
-                onClick={() => setIsModelDropdownOpen(false)}
-              />
-              <div className="absolute right-0 mt-2 w-52 origin-top-right rounded-xl border border-slate-800 bg-slate-950 p-1.5 shadow-2xl z-20">
+              <div className="fixed inset-0 z-10" onClick={() => setIsModelDropdownOpen(false)} />
+              <div className="absolute right-0 z-20 mt-2 w-52 origin-top-right rounded-xl border border-slate-800 bg-slate-950 p-1.5 shadow-2xl">
                 {models.map((m) => (
                   <button
                     key={m}
@@ -84,9 +69,9 @@ export function TopBar({ onMenuClick }: TopBarProps) {
                       setModel(m);
                       setIsModelDropdownOpen(false);
                     }}
-                    className={`w-full text-left rounded-lg px-3 py-2 text-xs font-medium transition ${
-                      m === model 
-                        ? "bg-cyan-500/10 text-cyan-400" 
+                    className={`w-full rounded-lg px-3 py-2 text-left text-xs font-medium transition ${
+                      m === model
+                        ? "bg-cyan-500/10 text-cyan-400"
                         : "text-slate-400 hover:bg-slate-900 hover:text-white"
                     }`}
                   >

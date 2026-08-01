@@ -114,9 +114,12 @@ export function FullAnalysisReport({
   const performanceScore = data.performance_score ?? 88;
   const maintainabilityScore = data.maintainability_score ?? 80;
 
-  const critCount = data.critical_count ?? (data.issues?.filter((i) => i.severity === "critical").length || 0);
-  const highCount = data.high_count ?? (data.issues?.filter((i) => i.severity === "high").length || 0);
-  const medCount = data.medium_count ?? (data.issues?.filter((i) => i.severity === "medium").length || 0);
+  const critCount =
+    data.critical_count ?? (data.issues?.filter((i) => i.severity === "critical").length || 0);
+  const highCount =
+    data.high_count ?? (data.issues?.filter((i) => i.severity === "high").length || 0);
+  const medCount =
+    data.medium_count ?? (data.issues?.filter((i) => i.severity === "medium").length || 0);
   const lowCount = data.low_count ?? (data.issues?.filter((i) => i.severity === "low").length || 0);
 
   const copyToClipboard = (text: string, label: string) => {
@@ -140,22 +143,22 @@ export function FullAnalysisReport({
   };
 
   return (
-    <div className="w-full h-full min-h-screen bg-[#070913] text-slate-100 p-4 md:p-8 space-y-8 overflow-y-auto">
+    <div className="h-full min-h-screen w-full space-y-8 overflow-y-auto bg-[#070913] p-4 text-slate-100 md:p-8">
       {/* Header Bar */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+      <div className="flex flex-col items-start justify-between gap-4 border-b border-slate-800 pb-6 md:flex-row md:items-center">
         <div>
           <div className="flex items-center gap-3">
-            <span className="p-2 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20">
-              <Sparkles className="w-6 h-6" />
+            <span className="rounded-lg border border-blue-500/20 bg-blue-500/10 p-2 text-blue-400">
+              <Sparkles className="h-6 w-6" />
             </span>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-3">
+              <h1 className="flex items-center gap-3 text-2xl font-bold tracking-tight text-white">
                 CodeMedic AI Audit Workspace
-                <span className="text-xs px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 font-mono">
+                <span className="rounded-full border border-cyan-500/30 bg-cyan-500/10 px-2.5 py-1 font-mono text-xs text-cyan-400">
                   {fileName}
                 </span>
               </h1>
-              <p className="text-sm text-slate-400 mt-1">
+              <p className="mt-1 text-sm text-slate-400">
                 Full-page diagnostic report generated dynamically via AI AST Engine.
               </p>
             </div>
@@ -170,25 +173,25 @@ export function FullAnalysisReport({
                 href={`/api/v1/reports/${reportId}/export/pdf`}
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition"
+                className="flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-800 px-3.5 py-2 text-xs font-semibold text-slate-200 transition hover:bg-slate-700"
               >
-                <Download className="w-4 h-4 text-cyan-400" /> PDF Report
+                <Download className="h-4 w-4 text-cyan-400" /> PDF Report
               </a>
               <a
                 href={`/api/v1/reports/${reportId}/export/markdown`}
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition"
+                className="flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-800 px-3.5 py-2 text-xs font-semibold text-slate-200 transition hover:bg-slate-700"
               >
-                <FileText className="w-4 h-4 text-purple-400" /> Markdown
+                <FileText className="h-4 w-4 text-purple-400" /> Markdown
               </a>
               <a
                 href={`/api/v1/reports/${reportId}/export/json`}
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition"
+                className="flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-800 px-3.5 py-2 text-xs font-semibold text-slate-200 transition hover:bg-slate-700"
               >
-                <FileJson className="w-4 h-4 text-emerald-400" /> JSON
+                <FileJson className="h-4 w-4 text-emerald-400" /> JSON
               </a>
             </>
           )}
@@ -196,16 +199,16 @@ export function FullAnalysisReport({
           {data.optimized_code && onApplyFix && (
             <button
               onClick={() => onApplyFix(data.optimized_code!)}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20 transition"
+              className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-500"
             >
-              <RefreshCw className="w-4 h-4" /> Apply Optimized Code
+              <RefreshCw className="h-4 w-4" /> Apply Optimized Code
             </button>
           )}
 
           {onCloseReport && (
             <button
               onClick={onCloseReport}
-              className="px-3.5 py-2 rounded-lg text-xs font-medium text-slate-400 hover:text-white bg-slate-800/50 hover:bg-slate-800 border border-slate-700/50 transition"
+              className="rounded-lg border border-slate-700/50 bg-slate-800/50 px-3.5 py-2 text-xs font-medium text-slate-400 transition hover:bg-slate-800 hover:text-white"
             >
               Back to Editor
             </button>
@@ -214,15 +217,19 @@ export function FullAnalysisReport({
       </div>
 
       {/* TOP SUMMARY METRICS GRID */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">
         {/* Overall Code Health */}
-        <div className={`p-4 rounded-xl border ${getScoreColor(healthScore)} flex flex-col justify-between`}>
-          <span className="text-xs uppercase font-medium text-slate-400 tracking-wider">Code Health</span>
+        <div
+          className={`rounded-xl border p-4 ${getScoreColor(healthScore)} flex flex-col justify-between`}
+        >
+          <span className="text-xs font-medium uppercase tracking-wider text-slate-400">
+            Code Health
+          </span>
           <div className="mt-2 flex items-baseline justify-between">
             <span className="text-3xl font-black">{healthScore}</span>
-            <span className="text-xs opacity-75 font-mono">/ 100</span>
+            <span className="font-mono text-xs opacity-75">/ 100</span>
           </div>
-          <div className="w-full bg-slate-800/50 h-1.5 rounded-full mt-3 overflow-hidden">
+          <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-slate-800/50">
             <div
               className={`h-full ${healthScore >= 80 ? "bg-emerald-500" : healthScore >= 60 ? "bg-amber-500" : "bg-rose-500"}`}
               style={{ width: `${healthScore}%` }}
@@ -231,96 +238,110 @@ export function FullAnalysisReport({
         </div>
 
         {/* Security Score */}
-        <div className={`p-4 rounded-xl border ${getScoreColor(securityScore)} flex flex-col justify-between`}>
-          <span className="text-xs uppercase font-medium text-slate-400 tracking-wider flex items-center gap-1.5">
-            <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" /> Security Rating
+        <div
+          className={`rounded-xl border p-4 ${getScoreColor(securityScore)} flex flex-col justify-between`}
+        >
+          <span className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-slate-400">
+            <ShieldCheck className="h-3.5 w-3.5 text-cyan-400" /> Security Rating
           </span>
           <div className="mt-2 flex items-baseline justify-between">
             <span className="text-3xl font-black">{securityScore}</span>
-            <span className="text-xs opacity-75 font-mono">/ 100</span>
+            <span className="font-mono text-xs opacity-75">/ 100</span>
           </div>
-          <div className="w-full bg-slate-800/50 h-1.5 rounded-full mt-3 overflow-hidden">
+          <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-slate-800/50">
             <div className="h-full bg-cyan-400" style={{ width: `${securityScore}%` }} />
           </div>
         </div>
 
         {/* Performance Score */}
-        <div className={`p-4 rounded-xl border ${getScoreColor(performanceScore)} flex flex-col justify-between`}>
-          <span className="text-xs uppercase font-medium text-slate-400 tracking-wider flex items-center gap-1.5">
-            <Zap className="w-3.5 h-3.5 text-amber-400" /> Performance
+        <div
+          className={`rounded-xl border p-4 ${getScoreColor(performanceScore)} flex flex-col justify-between`}
+        >
+          <span className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-slate-400">
+            <Zap className="h-3.5 w-3.5 text-amber-400" /> Performance
           </span>
           <div className="mt-2 flex items-baseline justify-between">
             <span className="text-3xl font-black">{performanceScore}</span>
-            <span className="text-xs font-mono text-amber-400">{data.complexity?.time || "O(1)"}</span>
+            <span className="font-mono text-xs text-amber-400">
+              {data.complexity?.time || "O(1)"}
+            </span>
           </div>
-          <div className="w-full bg-slate-800/50 h-1.5 rounded-full mt-3 overflow-hidden">
+          <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-slate-800/50">
             <div className="h-full bg-amber-400" style={{ width: `${performanceScore}%` }} />
           </div>
         </div>
 
         {/* Maintainability Index */}
-        <div className={`p-4 rounded-xl border ${getScoreColor(maintainabilityScore)} flex flex-col justify-between`}>
-          <span className="text-xs uppercase font-medium text-slate-400 tracking-wider flex items-center gap-1.5">
-            <BookOpen className="w-3.5 h-3.5 text-purple-400" /> Maintainability
+        <div
+          className={`rounded-xl border p-4 ${getScoreColor(maintainabilityScore)} flex flex-col justify-between`}
+        >
+          <span className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-slate-400">
+            <BookOpen className="h-3.5 w-3.5 text-purple-400" /> Maintainability
           </span>
           <div className="mt-2 flex items-baseline justify-between">
             <span className="text-3xl font-black">{maintainabilityScore}</span>
-            <span className="text-xs opacity-75 font-mono">/ 100</span>
+            <span className="font-mono text-xs opacity-75">/ 100</span>
           </div>
-          <div className="w-full bg-slate-800/50 h-1.5 rounded-full mt-3 overflow-hidden">
+          <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-slate-800/50">
             <div className="h-full bg-purple-400" style={{ width: `${maintainabilityScore}%` }} />
           </div>
         </div>
 
         {/* Critical & High Issues */}
-        <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 flex flex-col justify-between">
-          <span className="text-xs uppercase font-medium text-slate-400 tracking-wider">Critical / High</span>
+        <div className="flex flex-col justify-between rounded-xl border border-slate-800 bg-slate-900/80 p-4">
+          <span className="text-xs font-medium uppercase tracking-wider text-slate-400">
+            Critical / High
+          </span>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-3xl font-black text-rose-400">{critCount}</span>
             <span className="text-slate-500">/</span>
             <span className="text-2xl font-bold text-orange-400">{highCount}</span>
           </div>
-          <div className="flex gap-1.5 mt-3">
-            <span className="text-[10px] px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 font-mono">
+          <div className="mt-3 flex gap-1.5">
+            <span className="rounded bg-rose-500/20 px-2 py-0.5 font-mono text-[10px] text-rose-300">
               Med: {medCount}
             </span>
-            <span className="text-[10px] px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-mono">
+            <span className="rounded bg-cyan-500/20 px-2 py-0.5 font-mono text-[10px] text-cyan-300">
               Low: {lowCount}
             </span>
           </div>
         </div>
 
         {/* AI Confidence & Execution Time */}
-        <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 flex flex-col justify-between">
-          <span className="text-xs uppercase font-medium text-slate-400 tracking-wider">AI Confidence</span>
+        <div className="flex flex-col justify-between rounded-xl border border-slate-800 bg-slate-900/80 p-4">
+          <span className="text-xs font-medium uppercase tracking-wider text-slate-400">
+            AI Confidence
+          </span>
           <div className="mt-2 flex items-baseline justify-between">
             <span className="text-3xl font-black text-blue-400">{data.confidence || 95}%</span>
-            <span className="text-xs text-slate-400 font-mono">AST Scan</span>
+            <span className="font-mono text-xs text-slate-400">AST Scan</span>
           </div>
-          <p className="text-[11px] text-slate-500 mt-2 truncate">
-            Language: <span className="text-slate-300 font-semibold">{language}</span>
+          <p className="mt-2 truncate text-[11px] text-slate-500">
+            Language: <span className="font-semibold text-slate-300">{language}</span>
           </p>
         </div>
       </div>
 
       {/* EXECUTIVE SUMMARY & AI EXPLANATION */}
-      <div className="p-6 rounded-2xl bg-gradient-to-r from-slate-900 via-[#0b1021] to-slate-900 border border-slate-800/80 shadow-xl space-y-4">
+      <div className="space-y-4 rounded-2xl border border-slate-800/80 bg-gradient-to-r from-slate-900 via-[#0b1021] to-slate-900 p-6 shadow-xl">
         <div className="flex items-center gap-3">
-          <span className="p-2 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-            <Sparkles className="w-5 h-5" />
+          <span className="rounded-lg border border-cyan-500/20 bg-cyan-500/10 p-2 text-cyan-400">
+            <Sparkles className="h-5 w-5" />
           </span>
-          <h2 className="text-lg font-bold text-white tracking-tight">Executive Summary & AI Diagnosis</h2>
+          <h2 className="text-lg font-bold tracking-tight text-white">
+            Executive Summary & AI Diagnosis
+          </h2>
         </div>
-        <p className="text-sm text-slate-300 leading-relaxed font-normal bg-slate-950/60 p-4 rounded-xl border border-slate-800/60">
+        <p className="rounded-xl border border-slate-800/60 bg-slate-950/60 p-4 text-sm font-normal leading-relaxed text-slate-300">
           {data.summary}
         </p>
 
         {data.code_explanation && (
-          <div className="mt-3 pt-3 border-t border-slate-800/60">
-            <h3 className="text-xs font-semibold uppercase text-slate-400 tracking-wider mb-2">
+          <div className="mt-3 border-t border-slate-800/60 pt-3">
+            <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
               Step-by-Step AI Technical Explanation
             </h3>
-            <div className="text-xs text-slate-300 whitespace-pre-wrap leading-relaxed bg-slate-950/40 p-4 rounded-xl border border-slate-800/40 font-mono">
+            <div className="whitespace-pre-wrap rounded-xl border border-slate-800/40 bg-slate-950/40 p-4 font-mono text-xs leading-relaxed text-slate-300">
               {data.code_explanation}
             </div>
           </div>
@@ -329,75 +350,75 @@ export function FullAnalysisReport({
 
       {/* DIAGNOSTICS TAB NAVIGATION HUB */}
       <div className="space-y-6">
-        <div className="flex items-center gap-2 border-b border-slate-800 overflow-x-auto pb-1">
+        <div className="flex items-center gap-2 overflow-x-auto border-b border-slate-800 pb-1">
           <button
             onClick={() => setActiveTab("overview")}
-            className={`px-4 py-2.5 text-xs font-semibold rounded-t-lg transition flex items-center gap-2 border-b-2 ${
+            className={`flex items-center gap-2 rounded-t-lg border-b-2 px-4 py-2.5 text-xs font-semibold transition ${
               activeTab === "overview"
-                ? "border-blue-500 text-blue-400 bg-blue-500/10"
+                ? "border-blue-500 bg-blue-500/10 text-blue-400"
                 : "border-transparent text-slate-400 hover:text-slate-200"
             }`}
           >
-            <Sparkles className="w-4 h-4" /> Overview & Metrics
+            <Sparkles className="h-4 w-4" /> Overview & Metrics
           </button>
 
           <button
             onClick={() => setActiveTab("bugs")}
-            className={`px-4 py-2.5 text-xs font-semibold rounded-t-lg transition flex items-center gap-2 border-b-2 ${
+            className={`flex items-center gap-2 rounded-t-lg border-b-2 px-4 py-2.5 text-xs font-semibold transition ${
               activeTab === "bugs"
-                ? "border-rose-500 text-rose-400 bg-rose-500/10"
+                ? "border-rose-500 bg-rose-500/10 text-rose-400"
                 : "border-transparent text-slate-400 hover:text-slate-200"
             }`}
           >
-            <AlertTriangle className="w-4 h-4 text-rose-400" />
+            <AlertTriangle className="h-4 w-4 text-rose-400" />
             Detected Bugs ({data.issues?.length || 0})
           </button>
 
           <button
             onClick={() => setActiveTab("security")}
-            className={`px-4 py-2.5 text-xs font-semibold rounded-t-lg transition flex items-center gap-2 border-b-2 ${
+            className={`flex items-center gap-2 rounded-t-lg border-b-2 px-4 py-2.5 text-xs font-semibold transition ${
               activeTab === "security"
-                ? "border-cyan-500 text-cyan-400 bg-cyan-500/10"
+                ? "border-cyan-500 bg-cyan-500/10 text-cyan-400"
                 : "border-transparent text-slate-400 hover:text-slate-200"
             }`}
           >
-            <ShieldAlert className="w-4 h-4 text-cyan-400" />
+            <ShieldAlert className="h-4 w-4 text-cyan-400" />
             OWASP Security ({data.security?.length || 0})
           </button>
 
           <button
             onClick={() => setActiveTab("performance")}
-            className={`px-4 py-2.5 text-xs font-semibold rounded-t-lg transition flex items-center gap-2 border-b-2 ${
+            className={`flex items-center gap-2 rounded-t-lg border-b-2 px-4 py-2.5 text-xs font-semibold transition ${
               activeTab === "performance"
-                ? "border-amber-500 text-amber-400 bg-amber-500/10"
+                ? "border-amber-500 bg-amber-500/10 text-amber-400"
                 : "border-transparent text-slate-400 hover:text-slate-200"
             }`}
           >
-            <Zap className="w-4 h-4 text-amber-400" />
+            <Zap className="h-4 w-4 text-amber-400" />
             Performance ({data.performance?.length || 0})
           </button>
 
           <button
             onClick={() => setActiveTab("codereview")}
-            className={`px-4 py-2.5 text-xs font-semibold rounded-t-lg transition flex items-center gap-2 border-b-2 ${
+            className={`flex items-center gap-2 rounded-t-lg border-b-2 px-4 py-2.5 text-xs font-semibold transition ${
               activeTab === "codereview"
-                ? "border-purple-500 text-purple-400 bg-purple-500/10"
+                ? "border-purple-500 bg-purple-500/10 text-purple-400"
                 : "border-transparent text-slate-400 hover:text-slate-200"
             }`}
           >
-            <CheckSquare className="w-4 h-4 text-purple-400" />
+            <CheckSquare className="h-4 w-4 text-purple-400" />
             Senior Review ({data.code_review?.length || 0})
           </button>
 
           <button
             onClick={() => setActiveTab("tests")}
-            className={`px-4 py-2.5 text-xs font-semibold rounded-t-lg transition flex items-center gap-2 border-b-2 ${
+            className={`flex items-center gap-2 rounded-t-lg border-b-2 px-4 py-2.5 text-xs font-semibold transition ${
               activeTab === "tests"
-                ? "border-emerald-500 text-emerald-400 bg-emerald-500/10"
+                ? "border-emerald-500 bg-emerald-500/10 text-emerald-400"
                 : "border-transparent text-slate-400 hover:text-slate-200"
             }`}
           >
-            <Code2 className="w-4 h-4 text-emerald-400" />
+            <Code2 className="h-4 w-4 text-emerald-400" />
             Unit Tests ({data.tests?.length || 0})
           </button>
         </div>
@@ -406,48 +427,57 @@ export function FullAnalysisReport({
         <div className="min-h-[300px]">
           {/* OVERVIEW TAB */}
           {activeTab === "overview" && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="p-5 rounded-xl bg-slate-900/60 border border-slate-800 space-y-4">
-                <h3 className="text-sm font-bold text-slate-200 flex items-center gap-2">
-                  <Cpu className="w-4 h-4 text-blue-400" /> Algorithmic Complexity Bounds
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <div className="space-y-4 rounded-xl border border-slate-800 bg-slate-900/60 p-5">
+                <h3 className="flex items-center gap-2 text-sm font-bold text-slate-200">
+                  <Cpu className="h-4 w-4 text-blue-400" /> Algorithmic Complexity Bounds
                 </h3>
                 <div className="grid grid-cols-2 gap-4 pt-2">
-                  <div className="p-3 rounded-lg bg-slate-950 border border-slate-800">
-                    <span className="text-xs text-slate-400 block">Time Complexity</span>
-                    <span className="text-lg font-mono font-bold text-amber-400">
+                  <div className="rounded-lg border border-slate-800 bg-slate-950 p-3">
+                    <span className="block text-xs text-slate-400">Time Complexity</span>
+                    <span className="font-mono text-lg font-bold text-amber-400">
                       {data.complexity?.time || "O(N)"}
                     </span>
                   </div>
-                  <div className="p-3 rounded-lg bg-slate-950 border border-slate-800">
-                    <span className="text-xs text-slate-400 block">Space Complexity</span>
-                    <span className="text-lg font-mono font-bold text-cyan-400">
+                  <div className="rounded-lg border border-slate-800 bg-slate-950 p-3">
+                    <span className="block text-xs text-slate-400">Space Complexity</span>
+                    <span className="font-mono text-lg font-bold text-cyan-400">
                       {data.complexity?.space || "O(1)"}
                     </span>
                   </div>
                 </div>
                 {data.complexity?.explanation && (
-                  <p className="text-xs text-slate-400 leading-relaxed font-mono pt-2">
+                  <p className="pt-2 font-mono text-xs leading-relaxed text-slate-400">
                     {data.complexity.explanation}
                   </p>
                 )}
               </div>
 
-              <div className="p-5 rounded-xl bg-slate-900/60 border border-slate-800 space-y-4">
-                <h3 className="text-sm font-bold text-slate-200 flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Key Engineering Recommendations
+              <div className="space-y-4 rounded-xl border border-slate-800 bg-slate-900/60 p-5">
+                <h3 className="flex items-center gap-2 text-sm font-bold text-slate-200">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-400" /> Key Engineering
+                  Recommendations
                 </h3>
-                <ul className="text-xs text-slate-300 space-y-2.5">
+                <ul className="space-y-2.5 text-xs text-slate-300">
                   <li className="flex items-start gap-2">
-                    <span className="text-emerald-400 font-bold">•</span>
-                    <span>Eliminate raw concatenation in queries to mitigate OWASP Injection attacks.</span>
+                    <span className="font-bold text-emerald-400">•</span>
+                    <span>
+                      Eliminate raw concatenation in queries to mitigate OWASP Injection attacks.
+                    </span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-emerald-400 font-bold">•</span>
-                    <span>Pre-index nested collection lookups to optimize time complexity from O(N^2) to O(1).</span>
+                    <span className="font-bold text-emerald-400">•</span>
+                    <span>
+                      Pre-index nested collection lookups to optimize time complexity from O(N^2) to
+                      O(1).
+                    </span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-emerald-400 font-bold">•</span>
-                    <span>Add explicit return type annotations and PEP 257 docstrings for team intellisense.</span>
+                    <span className="font-bold text-emerald-400">•</span>
+                    <span>
+                      Add explicit return type annotations and PEP 257 docstrings for team
+                      intellisense.
+                    </span>
                   </li>
                 </ul>
               </div>
@@ -458,47 +488,57 @@ export function FullAnalysisReport({
           {activeTab === "bugs" && (
             <div className="space-y-4">
               {!data.issues || data.issues.length === 0 ? (
-                <div className="p-8 text-center rounded-xl bg-slate-900/40 border border-slate-800 text-slate-400">
-                  <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto mb-2" />
+                <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-8 text-center text-slate-400">
+                  <CheckCircle2 className="mx-auto mb-2 h-8 w-8 text-emerald-400" />
                   No code flaws or syntax bugs detected in this snippet.
                 </div>
               ) : (
                 data.issues.map((issue, idx) => (
                   <div
                     key={idx}
-                    className="rounded-xl bg-slate-900/80 border border-slate-800 overflow-hidden transition"
+                    className="overflow-hidden rounded-xl border border-slate-800 bg-slate-900/80 transition"
                   >
                     <div
                       onClick={() => setExpandedBugIdx(expandedBugIdx === idx ? null : idx)}
-                      className="p-4 flex items-center justify-between cursor-pointer hover:bg-slate-800/50 transition"
+                      className="flex cursor-pointer items-center justify-between p-4 transition hover:bg-slate-800/50"
                     >
                       <div className="flex items-center gap-3">
-                        <span className={`px-2.5 py-0.5 text-[11px] font-bold rounded-md border ${getSeverityBadge(issue.severity)}`}>
+                        <span
+                          className={`rounded-md border px-2.5 py-0.5 text-[11px] font-bold ${getSeverityBadge(issue.severity)}`}
+                        >
                           {issue.severity.toUpperCase()}
                         </span>
                         <h4 className="text-sm font-semibold text-white">
-                          {issue.title} {issue.line && <span className="text-slate-400 font-mono text-xs">(Line {issue.line})</span>}
+                          {issue.title}{" "}
+                          {issue.line && (
+                            <span className="font-mono text-xs text-slate-400">
+                              (Line {issue.line})
+                            </span>
+                          )}
                         </h4>
                       </div>
                       {expandedBugIdx === idx ? (
-                        <ChevronUp className="w-4 h-4 text-slate-400" />
+                        <ChevronUp className="h-4 w-4 text-slate-400" />
                       ) : (
-                        <ChevronDown className="w-4 h-4 text-slate-400" />
+                        <ChevronDown className="h-4 w-4 text-slate-400" />
                       )}
                     </div>
 
                     {expandedBugIdx === idx && (
-                      <div className="p-4 border-t border-slate-800 bg-slate-950/60 space-y-3 text-xs">
+                      <div className="space-y-3 border-t border-slate-800 bg-slate-950/60 p-4 text-xs">
                         <p className="text-slate-300">{issue.description}</p>
                         {issue.why_it_happens && (
-                          <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-300">
-                            <strong className="block text-[11px] uppercase tracking-wider mb-1 text-rose-400">Why It Happens:</strong>
+                          <div className="rounded-lg border border-rose-500/20 bg-rose-500/10 p-3 text-rose-300">
+                            <strong className="mb-1 block text-[11px] uppercase tracking-wider text-rose-400">
+                              Why It Happens:
+                            </strong>
                             {issue.why_it_happens}
                           </div>
                         )}
                         {issue.impact && (
                           <p className="text-slate-400">
-                            <strong className="text-slate-300">Runtime Impact:</strong> {issue.impact}
+                            <strong className="text-slate-300">Runtime Impact:</strong>{" "}
+                            {issue.impact}
                           </p>
                         )}
                         {issue.fix && (
@@ -508,17 +548,21 @@ export function FullAnalysisReport({
                         )}
                         {issue.fix_code && (
                           <div className="relative mt-2">
-                            <div className="flex items-center justify-between bg-slate-900 px-3 py-1.5 rounded-t-lg text-[10px] text-slate-400 font-mono">
+                            <div className="flex items-center justify-between rounded-t-lg bg-slate-900 px-3 py-1.5 font-mono text-[10px] text-slate-400">
                               <span>REPLACEMENT SNIPPET</span>
                               <button
                                 onClick={() => copyToClipboard(issue.fix_code!, `bug-${idx}`)}
-                                className="flex items-center gap-1 text-cyan-400 hover:text-cyan-300 transition"
+                                className="flex items-center gap-1 text-cyan-400 transition hover:text-cyan-300"
                               >
-                                {copiedSection === `bug-${idx}` ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                                {copiedSection === `bug-${idx}` ? (
+                                  <Check className="h-3 w-3" />
+                                ) : (
+                                  <Copy className="h-3 w-3" />
+                                )}
                                 Copy Code
                               </button>
                             </div>
-                            <pre className="p-3 rounded-b-lg bg-slate-950 text-cyan-300 font-mono text-[11px] border border-slate-800 overflow-x-auto">
+                            <pre className="overflow-x-auto rounded-b-lg border border-slate-800 bg-slate-950 p-3 font-mono text-[11px] text-cyan-300">
                               {issue.fix_code}
                             </pre>
                           </div>
@@ -535,26 +579,35 @@ export function FullAnalysisReport({
           {activeTab === "security" && (
             <div className="space-y-4">
               {!data.security || data.security.length === 0 ? (
-                <div className="p-8 text-center rounded-xl bg-slate-900/40 border border-slate-800 text-slate-400">
-                  <ShieldCheck className="w-8 h-8 text-cyan-400 mx-auto mb-2" />
+                <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-8 text-center text-slate-400">
+                  <ShieldCheck className="mx-auto mb-2 h-8 w-8 text-cyan-400" />
                   Zero security exposures or credentials leaks detected.
                 </div>
               ) : (
                 data.security.map((sec, idx) => (
-                  <div key={idx} className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 space-y-3">
+                  <div
+                    key={idx}
+                    className="space-y-3 rounded-xl border border-slate-800 bg-slate-900/80 p-4"
+                  >
                     <div className="flex items-center justify-between">
-                      <h4 className="text-sm font-semibold text-white flex items-center gap-2">
-                        <ShieldAlert className="w-4 h-4 text-cyan-400" />
+                      <h4 className="flex items-center gap-2 text-sm font-semibold text-white">
+                        <ShieldAlert className="h-4 w-4 text-cyan-400" />
                         {sec.finding || sec.title}
                       </h4>
-                      <span className={`px-2 py-0.5 text-[10px] font-mono rounded ${getSeverityBadge(sec.severity)}`}>
+                      <span
+                        className={`rounded px-2 py-0.5 font-mono text-[10px] ${getSeverityBadge(sec.severity)}`}
+                      >
                         [{sec.owasp_category || "OWASP"}] {sec.severity.toUpperCase()}
                       </span>
                     </div>
                     {(sec.remediation || sec.fix) && (
-                      <div className="p-3 rounded-lg bg-slate-950 border border-slate-800 text-xs text-slate-300">
-                        <strong className="block text-[11px] text-cyan-400 mb-1">Remediation Patch:</strong>
-                        <pre className="font-mono text-cyan-200 text-[11px] whitespace-pre-wrap">{sec.remediation || sec.fix}</pre>
+                      <div className="rounded-lg border border-slate-800 bg-slate-950 p-3 text-xs text-slate-300">
+                        <strong className="mb-1 block text-[11px] text-cyan-400">
+                          Remediation Patch:
+                        </strong>
+                        <pre className="whitespace-pre-wrap font-mono text-[11px] text-cyan-200">
+                          {sec.remediation || sec.fix}
+                        </pre>
                       </div>
                     )}
                   </div>
@@ -567,22 +620,27 @@ export function FullAnalysisReport({
           {activeTab === "performance" && (
             <div className="space-y-4">
               {!data.performance || data.performance.length === 0 ? (
-                <div className="p-8 text-center rounded-xl bg-slate-900/40 border border-slate-800 text-slate-400">
-                  <Zap className="w-8 h-8 text-amber-400 mx-auto mb-2" />
+                <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-8 text-center text-slate-400">
+                  <Zap className="mx-auto mb-2 h-8 w-8 text-amber-400" />
                   Code is optimized for fast processing speeds.
                 </div>
               ) : (
                 data.performance.map((perf, idx) => (
-                  <div key={idx} className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 space-y-3">
+                  <div
+                    key={idx}
+                    className="space-y-3 rounded-xl border border-slate-800 bg-slate-900/80 p-4"
+                  >
                     <div className="flex items-center justify-between">
-                      <h4 className="text-sm font-semibold text-white">{perf.issue || perf.title}</h4>
-                      <span className="text-xs font-mono text-amber-400">
+                      <h4 className="text-sm font-semibold text-white">
+                        {perf.issue || perf.title}
+                      </h4>
+                      <span className="font-mono text-xs text-amber-400">
                         {perf.current_time || "O(N)"} → {perf.optimized_time || "O(1)"}
                       </span>
                     </div>
                     <p className="text-xs text-slate-300">{perf.impact}</p>
                     {perf.fix && (
-                      <p className="text-xs text-slate-400 bg-slate-950 p-2.5 rounded-lg border border-slate-800">
+                      <p className="rounded-lg border border-slate-800 bg-slate-950 p-2.5 text-xs text-slate-400">
                         <strong className="text-amber-400">Optimization:</strong> {perf.fix}
                       </p>
                     )}
@@ -594,18 +652,21 @@ export function FullAnalysisReport({
 
           {/* CODE REVIEW TAB */}
           {activeTab === "codereview" && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               {!data.code_review || data.code_review.length === 0 ? (
-                <div className="col-span-2 p-8 text-center rounded-xl bg-slate-900/40 border border-slate-800 text-slate-400">
+                <div className="col-span-2 rounded-xl border border-slate-800 bg-slate-900/40 p-8 text-center text-slate-400">
                   Senior code review checks passed.
                 </div>
               ) : (
                 data.code_review.map((cr, idx) => (
-                  <div key={idx} className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 space-y-2">
+                  <div
+                    key={idx}
+                    className="space-y-2 rounded-xl border border-slate-800 bg-slate-900/80 p-4"
+                  >
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold text-slate-200">{cr.category}</span>
                       <span
-                        className={`px-2 py-0.5 text-[10px] font-bold rounded ${
+                        className={`rounded px-2 py-0.5 text-[10px] font-bold ${
                           cr.status === "pass"
                             ? "bg-emerald-500/20 text-emerald-300"
                             : "bg-amber-500/20 text-amber-300"
@@ -625,22 +686,26 @@ export function FullAnalysisReport({
           {activeTab === "tests" && (
             <div className="space-y-4">
               {!data.tests || data.tests.length === 0 ? (
-                <div className="p-8 text-center rounded-xl bg-slate-900/40 border border-slate-800 text-slate-400">
+                <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-8 text-center text-slate-400">
                   No automated tests generated.
                 </div>
               ) : (
-                <div className="rounded-xl bg-slate-950 border border-slate-800 overflow-hidden">
-                  <div className="flex items-center justify-between px-4 py-2 bg-slate-900 text-xs text-slate-400 font-mono border-b border-slate-800">
+                <div className="overflow-hidden rounded-xl border border-slate-800 bg-slate-950">
+                  <div className="flex items-center justify-between border-b border-slate-800 bg-slate-900 px-4 py-2 font-mono text-xs text-slate-400">
                     <span>GENERATED UNIT TEST SUITE</span>
                     <button
                       onClick={() => copyToClipboard(data.tests!.join("\n\n"), "tests")}
-                      className="flex items-center gap-1.5 text-cyan-400 hover:text-cyan-300 transition"
+                      className="flex items-center gap-1.5 text-cyan-400 transition hover:text-cyan-300"
                     >
-                      {copiedSection === "tests" ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                      {copiedSection === "tests" ? (
+                        <Check className="h-3.5 w-3.5" />
+                      ) : (
+                        <Copy className="h-3.5 w-3.5" />
+                      )}
                       Copy Test Suite
                     </button>
                   </div>
-                  <pre className="p-4 text-xs font-mono text-emerald-300 overflow-x-auto leading-relaxed">
+                  <pre className="overflow-x-auto p-4 font-mono text-xs leading-relaxed text-emerald-300">
                     {data.tests.join("\n\n")}
                   </pre>
                 </div>
@@ -652,33 +717,37 @@ export function FullAnalysisReport({
 
       {/* MONACO SIDE-BY-SIDE DIFF VIEWER */}
       {data.optimized_code && (
-        <div className="p-6 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-4">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+        <div className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/80 p-6">
+          <div className="flex flex-col items-start justify-between gap-2 border-b border-slate-800 pb-3 md:flex-row md:items-center">
             <div>
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
-                <Code2 className="w-5 h-5 text-blue-400" />
+              <h3 className="flex items-center gap-2 text-base font-bold text-white">
+                <Code2 className="h-5 w-5 text-blue-400" />
                 Before vs. After Code Comparison
               </h3>
-              <p className="text-xs text-slate-400">Side-by-side Monaco diff comparing original vs. refactored code.</p>
+              <p className="text-xs text-slate-400">
+                Side-by-side Monaco diff comparing original vs. refactored code.
+              </p>
             </div>
             {onApplyFix && (
               <button
                 onClick={() => onApplyFix(data.optimized_code!)}
-                className="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white transition shadow-md shadow-blue-500/20"
+                className="flex items-center gap-2 rounded-lg bg-blue-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-md shadow-blue-500/20 transition hover:bg-blue-500"
               >
-                <Check className="w-3.5 h-3.5" /> Apply Optimized Code
+                <Check className="h-3.5 w-3.5" /> Apply Optimized Code
               </button>
             )}
           </div>
 
           {data.why_better && (
-            <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 text-xs text-blue-200 space-y-1">
-              <strong className="block font-semibold text-blue-400">Why this refactored version is better:</strong>
-              <div className="whitespace-pre-wrap leading-relaxed font-mono">{data.why_better}</div>
+            <div className="space-y-1 rounded-xl border border-blue-500/20 bg-blue-500/10 p-4 text-xs text-blue-200">
+              <strong className="block font-semibold text-blue-400">
+                Why this refactored version is better:
+              </strong>
+              <div className="whitespace-pre-wrap font-mono leading-relaxed">{data.why_better}</div>
             </div>
           )}
 
-          <div className="h-[450px] rounded-xl overflow-hidden border border-slate-800">
+          <div className="h-[450px] overflow-hidden rounded-xl border border-slate-800">
             <DiffEditor
               height="100%"
               original={originalCode}

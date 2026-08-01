@@ -1,12 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { 
-  FileUp, 
-  UploadCloud, 
-  RefreshCw,
-  Sparkles
-} from "lucide-react";
+import { FileUp, UploadCloud, RefreshCw, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface UploadZoneProps {
@@ -15,11 +10,7 @@ interface UploadZoneProps {
   onDragStateChange: (state: boolean) => void;
 }
 
-export function UploadZone({
-  onFileLoaded,
-  isDragging,
-  onDragStateChange
-}: UploadZoneProps) {
+export function UploadZone({ onFileLoaded, isDragging, onDragStateChange }: UploadZoneProps) {
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [uploadingName, setUploadingName] = useState<string>("");
 
@@ -46,7 +37,7 @@ export function UploadZone({
         reader.onload = (event) => {
           const content = event.target?.result as string;
           const ext = file.name.split(".").pop()?.toLowerCase() || "";
-          
+
           // Map file extension to monaco supported language keys
           let lang = "plaintext";
           const extMap: Record<string, string> = {
@@ -67,7 +58,7 @@ export function UploadZone({
             md: "markdown",
             txt: "plaintext",
             sh: "bash",
-            bash: "bash"
+            bash: "bash",
           };
 
           if (extMap[ext]) {
@@ -112,7 +103,7 @@ export function UploadZone({
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
       className={`relative flex h-full w-full flex-col items-center justify-center bg-[#070913] p-8 text-center transition-all ${
-        isDragging ? "ring-2 ring-inset ring-cyan-500/50 bg-cyan-950/5" : ""
+        isDragging ? "bg-cyan-950/5 ring-2 ring-inset ring-cyan-500/50" : ""
       }`}
     >
       {/* Empty State Layout */}
@@ -122,26 +113,29 @@ export function UploadZone({
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="max-w-md flex flex-col items-center"
+            className="flex max-w-md flex-col items-center"
           >
             {/* Glowing Icon Frame */}
             <div className="relative mb-6 flex size-16 items-center justify-center rounded-2xl border border-cyan-500/20 bg-slate-900 shadow-xl shadow-cyan-500/5">
-              <UploadCloud className={`size-7 text-cyan-400 ${isDragging ? "animate-bounce" : ""}`} />
+              <UploadCloud
+                className={`size-7 text-cyan-400 ${isDragging ? "animate-bounce" : ""}`}
+              />
               <div className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-cyan-400">
-                <Sparkles className="size-2 text-slate-950 fill-slate-950" />
+                <Sparkles className="size-2 fill-slate-950 text-slate-950" />
               </div>
             </div>
 
             <h2 className="text-lg font-extrabold tracking-tight text-white sm:text-xl">
               {isDragging ? "Drop your file here" : "AI-Powered Code Workspace"}
             </h2>
-            <p className="mt-2.5 text-xs leading-relaxed text-slate-400 font-medium">
-              Paste your code or upload a source file to begin AI-powered analysis. Support for over 15+ syntax environments including Python, TS, Go, and Rust.
+            <p className="mt-2.5 text-xs font-medium leading-relaxed text-slate-400">
+              Paste your code or upload a source file to begin AI-powered analysis. Support for over
+              15+ syntax environments including Python, TS, Go, and Rust.
             </p>
 
             {/* Custom Input Trigger */}
             <div className="mt-8">
-              <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 px-5 py-3.5 text-xs font-bold text-white shadow-lg shadow-blue-500/10 hover:brightness-110 transition">
+              <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 px-5 py-3.5 text-xs font-bold text-white shadow-lg shadow-blue-500/10 transition hover:brightness-110">
                 <FileUp className="size-4" />
                 Browse Local Files
                 <input
@@ -153,7 +147,7 @@ export function UploadZone({
               </label>
             </div>
 
-            <span className="mt-3.5 text-[10px] text-slate-500 font-semibold uppercase tracking-wider">
+            <span className="mt-3.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
               Or drag & drop files directly here
             </span>
           </motion.div>
@@ -162,13 +156,13 @@ export function UploadZone({
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="w-full max-w-sm flex flex-col items-center rounded-2xl border border-slate-800 bg-slate-950/60 p-6 backdrop-blur-md shadow-2xl"
+            className="flex w-full max-w-sm flex-col items-center rounded-2xl border border-slate-800 bg-slate-950/60 p-6 shadow-2xl backdrop-blur-md"
           >
-            <div className="mb-4 flex size-12 items-center justify-center rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+            <div className="mb-4 flex size-12 items-center justify-center rounded-xl border border-cyan-500/20 bg-cyan-500/10 text-cyan-400">
               <RefreshCw className="size-5 animate-spin" />
             </div>
 
-            <span className="text-xs font-bold text-slate-200 truncate max-w-full">
+            <span className="max-w-full truncate text-xs font-bold text-slate-200">
               Loading {uploadingName}...
             </span>
             <p className="mt-1 text-[10px] text-slate-500">
@@ -177,11 +171,11 @@ export function UploadZone({
 
             {/* Progress Bar Container */}
             <div className="mt-5 w-full">
-              <div className="flex justify-between text-[9px] font-bold text-slate-400 mb-1 px-0.5">
+              <div className="mb-1 flex justify-between px-0.5 text-[9px] font-bold text-slate-400">
                 <span>PROGRESS</span>
                 <span>{uploadProgress}%</span>
               </div>
-              <div className="h-1.5 w-full rounded-full bg-slate-900 overflow-hidden border border-slate-800/40">
+              <div className="h-1.5 w-full overflow-hidden rounded-full border border-slate-800/40 bg-slate-900">
                 <motion.div
                   className="h-full bg-gradient-to-r from-blue-600 to-cyan-400"
                   initial={{ width: 0 }}

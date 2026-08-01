@@ -13,13 +13,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ChevronRight, FileText, Code2 } from "lucide-react";
 import { env } from "@/lib/env";
-import { 
-  PanelLeftClose, 
-  PanelLeftOpen, 
-  PanelRightClose, 
+import {
+  PanelLeftClose,
+  PanelLeftOpen,
+  PanelRightClose,
   PanelRightOpen,
   Keyboard,
-  Info
+  Info,
 } from "lucide-react";
 
 interface MonacoEditorPosition {
@@ -65,7 +65,9 @@ function EditorWorkspacePageContent() {
   const [cursorCol, setCursorCol] = useState<number>(1);
   const [totalLines, setTotalLines] = useState<number>(1);
   const [totalChars, setTotalChars] = useState<number>(0);
-  const [editorStatus, setEditorStatus] = useState<"Ready" | "Modified" | "Saved" | "Formatting" | "Analyzing">("Ready");
+  const [editorStatus, setEditorStatus] = useState<
+    "Ready" | "Modified" | "Saved" | "Formatting" | "Analyzing"
+  >("Ready");
   const [analysisResults, setAnalysisResults] = useState<AnalysisResult | null>(null);
   const [savedReportId, setSavedReportId] = useState<string | undefined>(undefined);
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
@@ -92,8 +94,21 @@ function EditorWorkspacePageContent() {
   const editorRef = useRef<MonacoEditorInstance | null>(null);
 
   const supportedLanguages = [
-    "Python", "Java", "JavaScript", "TypeScript", "C", "C++", 
-    "Go", "Rust", "PHP", "HTML", "CSS", "SQL", "Bash", "JSON", "Markdown"
+    "Python",
+    "Java",
+    "JavaScript",
+    "TypeScript",
+    "C",
+    "C++",
+    "Go",
+    "Rust",
+    "PHP",
+    "HTML",
+    "CSS",
+    "SQL",
+    "Bash",
+    "JSON",
+    "Markdown",
   ];
 
   useEffect(() => {
@@ -168,7 +183,7 @@ function EditorWorkspacePageContent() {
       sql: ".sql",
       json: ".json",
       markdown: ".md",
-      bash: ".sh"
+      bash: ".sh",
     };
     return extMap[lang] || ".txt";
   };
@@ -190,9 +205,12 @@ function EditorWorkspacePageContent() {
   const handleFormat = () => {
     if (editorRef.current) {
       setEditorStatus("Formatting");
-      editorRef.current.getAction("editor.action.formatDocument")?.run().then(() => {
-        setEditorStatus("Saved");
-      });
+      editorRef.current
+        .getAction("editor.action.formatDocument")
+        ?.run()
+        .then(() => {
+          setEditorStatus("Saved");
+        });
     }
   };
 
@@ -217,8 +235,8 @@ function EditorWorkspacePageContent() {
         body: JSON.stringify({
           code: code,
           language: language,
-          analysis_types: [analysisType]
-        })
+          analysis_types: [analysisType],
+        }),
       });
 
       if (!response.ok) {
@@ -287,7 +305,9 @@ function EditorWorkspacePageContent() {
               analysis_type: analysisType,
               code_quality_score: finalResult.code_health_score || finalResult.confidence || 85,
               bug_count: (finalResult.issues?.length || 0) + (finalResult.security?.length || 0),
-              security_score: finalResult.security_score || Math.max(0, 100 - (finalResult.security?.length || 0) * 15),
+              security_score:
+                finalResult.security_score ||
+                Math.max(0, 100 - (finalResult.security?.length || 0) * 15),
               analysis_duration: Math.floor(Math.random() * 4) + 2,
               confidence: finalResult.confidence || 95,
               code: code,
@@ -300,8 +320,8 @@ function EditorWorkspacePageContent() {
               performance: finalResult.performance || [],
               code_review: finalResult.code_review || [],
               complexity: finalResult.complexity || {},
-              tests: finalResult.tests || []
-            })
+              tests: finalResult.tests || [],
+            }),
           });
           if (saveRes.ok) {
             const savedData = await saveRes.json();
@@ -313,9 +333,9 @@ function EditorWorkspacePageContent() {
         // Auto-switch to full-page report workspace
         setViewMode("report");
       }
-
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "An unexpected error occurred during code analysis.";
+      const message =
+        err instanceof Error ? err.message : "An unexpected error occurred during code analysis.";
       setAnalysisError(message);
     } finally {
       setIsAnalyzing(false);
@@ -324,7 +344,7 @@ function EditorWorkspacePageContent() {
   };
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[#060814] text-slate-100 font-sans select-none">
+    <div className="flex h-screen w-screen select-none overflow-hidden bg-[#060814] font-sans text-slate-100">
       {/* 1. Left Sidebar Navigation */}
       <AnimatePresence mode="wait">
         {sidebarOpen && (
@@ -333,7 +353,7 @@ function EditorWorkspacePageContent() {
             animate={{ width: 256, opacity: 1 }}
             exit={{ width: 0, opacity: 0 }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="hidden lg:block h-full shrink-0"
+            className="hidden h-full shrink-0 lg:block"
           >
             <EditorSidebar
               onNewAnalysis={handleNewAnalysis}
@@ -350,7 +370,7 @@ function EditorWorkspacePageContent() {
       </AnimatePresence>
 
       {/* 2. Main Editor Workspace Container */}
-      <div className="flex flex-1 flex-col h-full overflow-hidden">
+      <div className="flex h-full flex-1 flex-col overflow-hidden">
         {/* Top bar settings / file actions */}
         <EditorToolbar
           fileName={fileName}
@@ -373,37 +393,45 @@ function EditorWorkspacePageContent() {
         />
 
         {/* Panel Control Toggles & View Mode Switcher */}
-        <div className="flex items-center justify-between border-b border-slate-900 bg-slate-950/20 px-4.5 py-1.5 text-xs text-slate-500 font-medium">
+        <div className="px-4.5 flex items-center justify-between border-b border-slate-900 bg-slate-950/20 py-1.5 text-xs font-medium text-slate-500">
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="flex items-center gap-1 hover:text-white transition"
+              className="flex items-center gap-1 transition hover:text-white"
               title="Toggle Left Sidebar"
             >
-              {sidebarOpen ? <PanelLeftClose className="size-4" /> : <PanelLeftOpen className="size-4" />}
+              {sidebarOpen ? (
+                <PanelLeftClose className="size-4" />
+              ) : (
+                <PanelLeftOpen className="size-4" />
+              )}
               <span className="hidden sm:inline">Explorer</span>
             </button>
 
             {analysisResults && (
               <>
                 <div className="h-3 w-[1px] bg-slate-800" />
-                <div className="flex items-center gap-1 bg-slate-900 p-0.5 rounded-lg border border-slate-800">
+                <div className="flex items-center gap-1 rounded-lg border border-slate-800 bg-slate-900 p-0.5">
                   <button
                     onClick={() => setViewMode("editor")}
-                    className={`px-2.5 py-1 rounded text-[11px] font-semibold transition flex items-center gap-1.5 ${
-                      viewMode === "editor" ? "bg-blue-600 text-white" : "text-slate-400 hover:text-slate-200"
+                    className={`flex items-center gap-1.5 rounded px-2.5 py-1 text-[11px] font-semibold transition ${
+                      viewMode === "editor"
+                        ? "bg-blue-600 text-white"
+                        : "text-slate-400 hover:text-slate-200"
                     }`}
                   >
-                    <Code2 className="w-3.5 h-3.5" /> Monaco Editor
+                    <Code2 className="h-3.5 w-3.5" /> Monaco Editor
                   </button>
                   <button
                     onClick={() => setViewMode("report")}
-                    className={`px-2.5 py-1 rounded text-[11px] font-semibold transition flex items-center gap-1.5 ${
-                      viewMode === "report" ? "bg-blue-600 text-white" : "text-slate-400 hover:text-slate-200"
+                    className={`flex items-center gap-1.5 rounded px-2.5 py-1 text-[11px] font-semibold transition ${
+                      viewMode === "report"
+                        ? "bg-blue-600 text-white"
+                        : "text-slate-400 hover:text-slate-200"
                     }`}
                   >
-                    <FileText className="w-3.5 h-3.5" /> Full Audit Report
+                    <FileText className="h-3.5 w-3.5" /> Full Audit Report
                   </button>
                 </div>
               </>
@@ -413,7 +441,7 @@ function EditorWorkspacePageContent() {
             <button
               type="button"
               onClick={() => setShowShortcuts(!showShortcuts)}
-              className="flex items-center gap-1 hover:text-white transition"
+              className="flex items-center gap-1 transition hover:text-white"
             >
               <Keyboard className="size-4" />
               <span className="hidden sm:inline">Keyboard Shortcuts</span>
@@ -421,24 +449,28 @@ function EditorWorkspacePageContent() {
           </div>
 
           <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1 text-[10px] text-slate-600 bg-slate-950 px-2 py-0.5 rounded border border-slate-900">
+            <span className="flex items-center gap-1 rounded border border-slate-900 bg-slate-950 px-2 py-0.5 text-[10px] text-slate-600">
               <Info className="size-3" /> Drag & Drop any source file here
             </span>
             <div className="h-3 w-[1px] bg-slate-800" />
             <button
               type="button"
               onClick={() => setRightPanelOpen(!rightPanelOpen)}
-              className="flex items-center gap-1 hover:text-white transition"
+              className="flex items-center gap-1 transition hover:text-white"
               title="Toggle AI Preview Panel"
             >
               <span className="hidden sm:inline">AI Preview</span>
-              {rightPanelOpen ? <PanelRightClose className="size-4" /> : <PanelRightOpen className="size-4" />}
+              {rightPanelOpen ? (
+                <PanelRightClose className="size-4" />
+              ) : (
+                <PanelRightOpen className="size-4" />
+              )}
             </button>
           </div>
         </div>
 
         {/* Dynamic Editor Panel OR Full Analysis Report Workspace */}
-        <div className="flex-1 relative overflow-hidden bg-[#070913]">
+        <div className="relative flex-1 overflow-hidden bg-[#070913]">
           {viewMode === "report" && analysisResults ? (
             <FullAnalysisReport
               data={analysisResults}
@@ -474,14 +506,14 @@ function EditorWorkspacePageContent() {
                   key="monaco-editor"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="h-full w-full relative"
+                  className="relative h-full w-full"
                   onDragOver={(e) => {
                     e.preventDefault();
                     setIsDragging(true);
                   }}
                 >
                   {isDragging && (
-                    <div 
+                    <div
                       onDragLeave={() => setIsDragging(false)}
                       onDrop={(e) => {
                         e.preventDefault();
@@ -497,7 +529,7 @@ function EditorWorkspacePageContent() {
                           reader.readAsText(files[0]);
                         }
                       }}
-                      className="absolute inset-0 z-10 bg-cyan-950/20 backdrop-blur-xs border-2 border-dashed border-cyan-500/40 flex items-center justify-center text-cyan-400 font-semibold text-sm pointer-events-auto"
+                      className="backdrop-blur-xs pointer-events-auto absolute inset-0 z-10 flex items-center justify-center border-2 border-dashed border-cyan-500/40 bg-cyan-950/20 text-sm font-semibold text-cyan-400"
                     >
                       Drop files to load into editor
                     </div>
@@ -524,7 +556,7 @@ function EditorWorkspacePageContent() {
                       scrollBeyondLastLine: false,
                       folding: true,
                       bracketPairColorization: { enabled: true },
-                      autoIndent: "full"
+                      autoIndent: "full",
                     }}
                     loading={
                       <div className="flex h-full w-full flex-col items-center justify-center gap-3 bg-[#070913] text-slate-400">
@@ -540,35 +572,31 @@ function EditorWorkspacePageContent() {
 
           {/* Analysis progress / error overlay */}
           {(isAnalyzing || analysisError) && (
-            <div className="absolute inset-0 z-30 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-6">
+            <div className="backdrop-blur-xs absolute inset-0 z-30 flex items-center justify-center bg-slate-950/60 p-6">
               {analysisError ? (
-                <div className="glass-panel max-w-sm w-full rounded-2xl border border-red-500/20 bg-slate-900/90 p-6 flex flex-col items-center text-center">
-                  <div className="mb-4 flex size-12 items-center justify-center rounded-xl bg-red-500/10 text-red-400 border border-red-500/20">
+                <div className="glass-panel flex w-full max-w-sm flex-col items-center rounded-2xl border border-red-500/20 bg-slate-900/90 p-6 text-center">
+                  <div className="mb-4 flex size-12 items-center justify-center rounded-xl border border-red-500/20 bg-red-500/10 text-red-400">
                     <span className="text-lg font-bold">!</span>
                   </div>
-                  <span className="text-sm font-bold text-white">
-                    Analysis Failed
-                  </span>
-                  <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-                    {analysisError}
-                  </p>
+                  <span className="text-sm font-bold text-white">Analysis Failed</span>
+                  <p className="mt-2 text-xs leading-relaxed text-slate-400">{analysisError}</p>
                   <button
                     type="button"
                     onClick={() => setAnalysisError(null)}
-                    className="mt-5 w-full rounded-xl bg-slate-800 py-2.5 text-xs font-bold text-white hover:bg-slate-700 transition"
+                    className="mt-5 w-full rounded-xl bg-slate-800 py-2.5 text-xs font-bold text-white transition hover:bg-slate-700"
                   >
                     Dismiss
                   </button>
                 </div>
               ) : (
-                <div className="glass-panel max-w-sm w-full rounded-2xl border border-slate-800 bg-slate-900/90 p-6 flex flex-col items-center text-center">
-                  <div className="mb-4 flex size-12 items-center justify-center rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-                    <div className="size-5 rounded-full border-2 border-cyan-500/20 border-t-cyan-400 animate-spin" />
+                <div className="glass-panel flex w-full max-w-sm flex-col items-center rounded-2xl border border-slate-800 bg-slate-900/90 p-6 text-center">
+                  <div className="mb-4 flex size-12 items-center justify-center rounded-xl border border-cyan-500/20 bg-cyan-500/10 text-cyan-400">
+                    <div className="size-5 animate-spin rounded-full border-2 border-cyan-500/20 border-t-cyan-400" />
                   </div>
-                  <span className="text-sm font-bold text-white uppercase tracking-wider">
+                  <span className="text-sm font-bold uppercase tracking-wider text-white">
                     {loadingMessage || "Analyzing..."}
                   </span>
-                  <p className="text-xs text-slate-500 mt-2">
+                  <p className="mt-2 text-xs text-slate-500">
                     Running diagnostic scan on codebase.
                   </p>
                 </div>
@@ -578,16 +606,16 @@ function EditorWorkspacePageContent() {
 
           {/* Keyboard Shortcuts Dialog Overlay */}
           {showShortcuts && (
-            <div className="absolute inset-0 z-30 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-6">
-              <div className="glass-panel max-w-md w-full rounded-2xl border border-slate-800 bg-slate-900/90 p-6">
-                <div className="flex items-center justify-between border-b border-slate-800/80 pb-3 mb-4">
-                  <span className="text-sm font-bold text-white flex items-center gap-2">
+            <div className="absolute inset-0 z-30 flex items-center justify-center bg-slate-950/80 p-6 backdrop-blur-sm">
+              <div className="glass-panel w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900/90 p-6">
+                <div className="mb-4 flex items-center justify-between border-b border-slate-800/80 pb-3">
+                  <span className="flex items-center gap-2 text-sm font-bold text-white">
                     <Keyboard className="size-4.5 text-cyan-400" /> Editor Shortcuts
                   </span>
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     onClick={() => setShowShortcuts(false)}
-                    className="text-xs text-slate-500 hover:text-white transition"
+                    className="text-xs text-slate-500 transition hover:text-white"
                   >
                     Close
                   </button>
@@ -595,23 +623,33 @@ function EditorWorkspacePageContent() {
                 <div className="space-y-3 text-xs text-slate-400">
                   <div className="flex justify-between">
                     <span>Format Document</span>
-                    <kbd className="bg-slate-800 border border-slate-700 px-2 py-0.5 rounded text-white text-[10px]">Alt + Shift + F</kbd>
+                    <kbd className="rounded border border-slate-700 bg-slate-800 px-2 py-0.5 text-[10px] text-white">
+                      Alt + Shift + F
+                    </kbd>
                   </div>
                   <div className="flex justify-between">
                     <span>Search / Replace</span>
-                    <kbd className="bg-slate-800 border border-slate-700 px-2 py-0.5 rounded text-white text-[10px]">Ctrl + F / Ctrl + H</kbd>
+                    <kbd className="rounded border border-slate-700 bg-slate-800 px-2 py-0.5 text-[10px] text-white">
+                      Ctrl + F / Ctrl + H
+                    </kbd>
                   </div>
                   <div className="flex justify-between">
                     <span>Multi-Cursor Alt Click</span>
-                    <kbd className="bg-slate-800 border border-slate-700 px-2 py-0.5 rounded text-white text-[10px]">Alt + Click</kbd>
+                    <kbd className="rounded border border-slate-700 bg-slate-800 px-2 py-0.5 text-[10px] text-white">
+                      Alt + Click
+                    </kbd>
                   </div>
                   <div className="flex justify-between">
                     <span>Fold/Unfold Section</span>
-                    <kbd className="bg-slate-800 border border-slate-700 px-2 py-0.5 rounded text-white text-[10px]">Ctrl + Shift + [ / ]</kbd>
+                    <kbd className="rounded border border-slate-700 bg-slate-800 px-2 py-0.5 text-[10px] text-white">
+                      Ctrl + Shift + [ / ]
+                    </kbd>
                   </div>
                   <div className="flex justify-between">
                     <span>Undo / Redo</span>
-                    <kbd className="bg-slate-800 border border-slate-700 px-2 py-0.5 rounded text-white text-[10px]">Ctrl + Z / Ctrl + Y</kbd>
+                    <kbd className="rounded border border-slate-700 bg-slate-800 px-2 py-0.5 text-[10px] text-white">
+                      Ctrl + Z / Ctrl + Y
+                    </kbd>
                   </div>
                 </div>
               </div>
@@ -621,10 +659,7 @@ function EditorWorkspacePageContent() {
 
         {/* Diagnostic Selectable Actions */}
         {viewMode === "editor" && (
-          <QuickModeCards
-            selectedMode={analysisType}
-            onSelectMode={setAnalysisType}
-          />
+          <QuickModeCards selectedMode={analysisType} onSelectMode={setAnalysisType} />
         )}
 
         {/* Telemetry Status bar */}
@@ -648,7 +683,7 @@ function EditorWorkspacePageContent() {
             animate={{ width: 320, opacity: 1 }}
             exit={{ width: 0, opacity: 0 }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="hidden xl:block h-full shrink-0"
+            className="hidden h-full shrink-0 xl:block"
           >
             <EditorRightPanel
               language={language}
@@ -667,28 +702,35 @@ function EditorWorkspacePageContent() {
       {/* Guided Tour Overlays */}
       <AnimatePresence>
         {tourStep && (
-          <div className="fixed inset-0 z-50 pointer-events-none">
+          <div className="pointer-events-none fixed inset-0 z-50">
             {tourStep === "2" && (
               <motion.div
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 15 }}
-                className="pointer-events-auto absolute bottom-20 left-[280px] glass-panel max-w-sm w-full rounded-2xl border border-cyan-500/30 bg-slate-950/95 p-5 shadow-[0_0_50px_rgba(6,182,212,0.25)] flex flex-col space-y-3"
+                className="glass-panel pointer-events-auto absolute bottom-20 left-[280px] flex w-full max-w-sm flex-col space-y-3 rounded-2xl border border-cyan-500/30 bg-slate-950/95 p-5 shadow-[0_0_50px_rgba(6,182,212,0.25)]"
               >
-                <div className="flex justify-between items-start">
-                  <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest">
+                <div className="flex items-start justify-between">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-cyan-400">
                     Tour • Step 2 of 6
                   </span>
-                  <button onClick={skipTour} className="text-[10px] text-slate-500 hover:text-slate-350 transition font-bold">Skip</button>
+                  <button
+                    onClick={skipTour}
+                    className="hover:text-slate-350 text-[10px] font-bold text-slate-500 transition"
+                  >
+                    Skip
+                  </button>
                 </div>
-                <h3 className="text-xs font-bold text-white leading-tight">Monaco Code Editor Workspace</h3>
-                <p className="text-[11px] text-slate-400 leading-relaxed">
+                <h3 className="text-xs font-bold leading-tight text-white">
+                  Monaco Code Editor Workspace
+                </h3>
+                <p className="text-[11px] leading-relaxed text-slate-400">
                   Features autocomplete, folding, search/replace, and file upload zones.
                 </p>
                 <div className="flex justify-end pt-1">
                   <button
                     onClick={() => router.push("/analyze?tour=3")}
-                    className="rounded-lg bg-cyan-500 hover:bg-cyan-600 px-3.5 py-1.5 text-[10px] font-bold text-white transition flex items-center gap-1"
+                    className="flex items-center gap-1 rounded-lg bg-cyan-500 px-3.5 py-1.5 text-[10px] font-bold text-white transition hover:bg-cyan-600"
                   >
                     Next: Audit Trigger
                     <ChevronRight className="size-3" />
@@ -702,22 +744,30 @@ function EditorWorkspacePageContent() {
                 initial={{ opacity: 0, y: -15 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -15 }}
-                className="pointer-events-auto absolute top-24 left-1/2 -translate-x-1/2 glass-panel max-w-sm w-full rounded-2xl border border-cyan-500/30 bg-slate-950/95 p-5 shadow-[0_0_50px_rgba(6,182,212,0.25)] flex flex-col space-y-3"
+                className="glass-panel pointer-events-auto absolute left-1/2 top-24 flex w-full max-w-sm -translate-x-1/2 flex-col space-y-3 rounded-2xl border border-cyan-500/30 bg-slate-950/95 p-5 shadow-[0_0_50px_rgba(6,182,212,0.25)]"
               >
-                <div className="flex justify-between items-start">
-                  <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest">
+                <div className="flex items-start justify-between">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-cyan-400">
                     Tour • Step 3 of 6
                   </span>
-                  <button onClick={skipTour} className="text-[10px] text-slate-500 hover:text-slate-350 transition font-bold">Skip</button>
+                  <button
+                    onClick={skipTour}
+                    className="hover:text-slate-350 text-[10px] font-bold text-slate-500 transition"
+                  >
+                    Skip
+                  </button>
                 </div>
-                <h3 className="text-xs font-bold text-white leading-tight">AI Diagnostics Launcher</h3>
-                <p className="text-[11px] text-slate-400 leading-relaxed">
-                  Choose audit modes (Bug scans, Security audits, Performance tuning) and click &quot;Analyze Code&quot;.
+                <h3 className="text-xs font-bold leading-tight text-white">
+                  AI Diagnostics Launcher
+                </h3>
+                <p className="text-[11px] leading-relaxed text-slate-400">
+                  Choose audit modes (Bug scans, Security audits, Performance tuning) and click
+                  &quot;Analyze Code&quot;.
                 </p>
                 <div className="flex justify-end pt-1">
                   <button
                     onClick={() => router.push("/analyze?tour=4")}
-                    className="rounded-lg bg-cyan-500 hover:bg-cyan-600 px-3.5 py-1.5 text-[10px] font-bold text-white transition flex items-center gap-1"
+                    className="flex items-center gap-1 rounded-lg bg-cyan-500 px-3.5 py-1.5 text-[10px] font-bold text-white transition hover:bg-cyan-600"
                   >
                     Next: View Results
                     <ChevronRight className="size-3" />
@@ -731,22 +781,29 @@ function EditorWorkspacePageContent() {
                 initial={{ opacity: 0, x: 15 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 15 }}
-                className="pointer-events-auto absolute bottom-20 right-[350px] glass-panel max-w-sm w-full rounded-2xl border border-cyan-500/30 bg-slate-950/95 p-5 shadow-[0_0_50px_rgba(6,182,212,0.25)] flex flex-col space-y-3"
+                className="glass-panel pointer-events-auto absolute bottom-20 right-[350px] flex w-full max-w-sm flex-col space-y-3 rounded-2xl border border-cyan-500/30 bg-slate-950/95 p-5 shadow-[0_0_50px_rgba(6,182,212,0.25)]"
               >
-                <div className="flex justify-between items-start">
-                  <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest">
+                <div className="flex items-start justify-between">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-cyan-400">
                     Tour • Step 4 of 6
                   </span>
-                  <button onClick={skipTour} className="text-[10px] text-slate-500 hover:text-slate-350 transition font-bold">Skip</button>
+                  <button
+                    onClick={skipTour}
+                    className="hover:text-slate-350 text-[10px] font-bold text-slate-500 transition"
+                  >
+                    Skip
+                  </button>
                 </div>
-                <h3 className="text-xs font-bold text-white leading-tight">Audits Insights & Fixes</h3>
-                <p className="text-[11px] text-slate-400 leading-relaxed">
+                <h3 className="text-xs font-bold leading-tight text-white">
+                  Audits Insights & Fixes
+                </h3>
+                <p className="text-[11px] leading-relaxed text-slate-400">
                   Review security, performance, bugs, and apply fixes back into Monaco.
                 </p>
                 <div className="flex justify-end pt-1">
                   <button
                     onClick={() => router.push("/reports?tour=5")}
-                    className="rounded-lg bg-cyan-500 hover:bg-cyan-600 px-3.5 py-1.5 text-[10px] font-bold text-white transition flex items-center gap-1"
+                    className="flex items-center gap-1 rounded-lg bg-cyan-500 px-3.5 py-1.5 text-[10px] font-bold text-white transition hover:bg-cyan-600"
                   >
                     Next: Reports History
                     <ChevronRight className="size-3" />

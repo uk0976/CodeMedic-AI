@@ -1,6 +1,7 @@
 import logging
 import re
 from typing import TypeVar
+
 from pydantic import BaseModel
 
 from app.schemas.analysis import (
@@ -17,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 T = TypeVar("T", bound=BaseModel)
 
+
 class LocalFallbackProvider(BaseAIProvider):
     def generate_structured_output(
         self,
@@ -29,16 +31,16 @@ class LocalFallbackProvider(BaseAIProvider):
         Extracts source code & language from user prompt and executes deep rule-based AST analysis with dynamic score math.
         """
         logger.info("Executing LocalFallbackProvider code analysis pipeline...")
-        
+
         # Extract language
         lang_match = re.search(r"Language environment:\s*([^\n]+)", user_prompt, re.IGNORECASE)
         language = lang_match.group(1).strip() if lang_match else "python"
-        
+
         # Extract code
         code_match = re.search(r"---\n(.*?)\n---", user_prompt, re.DOTALL)
         code = code_match.group(1).strip() if code_match else user_prompt
 
-        return self.analyze(code, language) # type: ignore[return-value]
+        return self.analyze(code, language)  # type: ignore[return-value]
 
     def analyze(self, code: str, language: str) -> AnalysisResponseSchema:
         issues: list[IssueItem] = []
@@ -51,15 +53,28 @@ class LocalFallbackProvider(BaseAIProvider):
         lang_lower = language.lower()
 
         # Extract function/class names
-        funcs = re.findall(r"(?:def|function|fn|pub fn|class|func)\s+([a-zA-Z_][a-zA-Z0-9_]*)", code)
+        funcs = re.findall(
+            r"(?:def|function|fn|pub fn|class|func)\s+([a-zA-Z_][a-zA-Z0-9_]*)", code
+        )
         primary_func = funcs[0] if funcs else "execute_process"
 
         # ---------------- 1. SECURITY VULNERABILITIES SCAN ----------------
         # A. Exposed Hardcoded Secrets
-        secret_keys = ["password", "secret", "api_key", "token", "private_key", "aws_secret", "jwt_secret"]
+        secret_keys = [
+            "password",
+            "secret",
+            "api_key",
+            "token",
+            "private_key",
+            "aws_secret",
+            "jwt_secret",
+        ]
         for idx, line in enumerate(code_lines, 1):
             if any(sk in line.lower() for sk in secret_keys) and ("=" in line or ":" in line):
-                if not any(safe in line.lower() for safe in ["os.getenv", "process.env", "config", "settings", "secretstr"]):
+                if not any(
+                    safe in line.lower()
+                    for safe in ["os.getenv", "process.env", "config", "settings", "secretstr"]
+                ):
                     security.append(
                         SecurityItem(
                             finding=f"Hardcoded sensitive secret or credential signature on line {idx}.",
@@ -68,14 +83,17 @@ class LocalFallbackProvider(BaseAIProvider):
                             risk_level="Critical",
                             risk_score=20,
                             fix="Extract credentials into environment variables or a secrets manager.",
-                            remediation=f"# Replace hardcoded secret on line {idx}:\n# API_KEY = os.getenv('API_KEY')"
+                            remediation=f"# Replace hardcoded secret on line {idx}:\n# API_KEY = os.getenv('API_KEY')",
                         )
                     )
                     break
 
         # B. SQL Injection
-        if any(kw in code_lower for kw in ["select ", "insert ", "update ", "delete ", "from ", "where "]):
-            if "+" in code or "%" in code or ".format(" in code or "f\"" in code or "f'" in code:
+        if any(
+            kw in code_lower
+            for kw in ["select ", "insert ", "update ", "delete ", "from ", "where "]
+        ):
+            if "+" in code or "%" in code or ".format(" in code or 'f"' in code or "f'" in code:
                 security.append(
                     SecurityItem(
                         finding="OWASP A03: SQL Injection — Raw string concatenation in SQL query string.",
@@ -84,7 +102,7 @@ class LocalFallbackProvider(BaseAIProvider):
                         risk_level="Critical",
                         risk_score=20,
                         fix="Utilize parameterized SQL query placeholders (e.g. cursor.execute('SELECT * FROM users WHERE id = %s', (user_id,))).",
-                        remediation="stmt = text('SELECT * FROM users WHERE id = :user_id')\nres = await db.execute(stmt, {'user_id': user_id})"
+                        remediation="stmt = text('SELECT * FROM users WHERE id = :user_id')\nres = await db.execute(stmt, {'user_id': user_id})",
                     )
                 )
 
@@ -98,7 +116,7 @@ class LocalFallbackProvider(BaseAIProvider):
                     risk_level="High",
                     risk_score=15,
                     fix="Avoid executing arbitrary string statements. Use json.loads or safe lookup mapping dicts.",
-                    remediation="data = json.loads(payload_string)"
+                    remediation="data = json.loads(payload_string)",
                 )
             )
 
@@ -112,7 +130,7 @@ class LocalFallbackProvider(BaseAIProvider):
                     risk_level="High",
                     risk_score=10,
                     fix="Use textContent or DOMPurify sanitization before appending raw string content to the DOM.",
-                    remediation="element.textContent = sanitizedUserInput;"
+                    remediation="element.textContent = sanitizedUserInput;",
                 )
             )
 
@@ -129,7 +147,7 @@ class LocalFallbackProvider(BaseAIProvider):
                             why_it_happens="Swallowing all exception types prevents root-cause diagnosis during runtime exceptions.",
                             impact="Silently ignores critical system errors, leading to invalid state propagation.",
                             fix="Specify exact exception types (e.g., except (ValueError, KeyError) as e:).",
-                            fix_code="except (ValueError, KeyError) as err:\n    logger.error(f'Expected operational failure: {err}')"
+                            fix_code="except (ValueError, KeyError) as err:\n    logger.error(f'Expected operational failure: {err}')",
                         )
                     )
                 if "print " in line and "print(" not in line:
@@ -142,7 +160,7 @@ class LocalFallbackProvider(BaseAIProvider):
                             why_it_happens="Unparenthesized print statements trigger SyntaxError exceptions in Python 3 environments.",
                             impact="Triggers fatal SyntaxError during module import or application execution.",
                             fix="Convert to function call syntax: print(...).",
-                            fix_code="print('Execution completed')"
+                            fix_code="print('Execution completed')",
                         )
                     )
 
@@ -158,7 +176,7 @@ class LocalFallbackProvider(BaseAIProvider):
                             why_it_happens="'var' declarations leak outside block scopes, creating scope mutation bugs.",
                             impact="Increases risk of unexpected variable overrides across nested loops and closures.",
                             fix="Replace 'var' with block-scoped 'const' or 'let' keywords.",
-                            fix_code="const items = [];"
+                            fix_code="const items = [];",
                         )
                     )
                 if "==" in line and "===" not in line and "!==" not in line and "!=" not in line:
@@ -171,7 +189,7 @@ class LocalFallbackProvider(BaseAIProvider):
                             why_it_happens="Loose equality triggers type casting algorithms before evaluating value comparison.",
                             impact="Causes subtle logic bugs when comparing strings, numbers, or falsy values.",
                             fix="Use strict equality comparison operator ('===').",
-                            fix_code="if (status === 'ACTIVE') { ... }"
+                            fix_code="if (status === 'ACTIVE') { ... }",
                         )
                     )
 
@@ -186,7 +204,7 @@ class LocalFallbackProvider(BaseAIProvider):
                         why_it_happens="Accessing methods or properties on uninitialized null references.",
                         impact="Triggers fatal NullPointerException crashes in production runtime loops.",
                         fix="Perform explicit null guards or use Optional<T> wrappers.",
-                        fix_code="Objects.requireNonNull(userDto, 'User payload cannot be null');"
+                        fix_code="Objects.requireNonNull(userDto, 'User payload cannot be null');",
                     )
                 )
 
@@ -201,7 +219,7 @@ class LocalFallbackProvider(BaseAIProvider):
                     optimized_time="O(N)",
                     space="O(N)",
                     memory_impact="High",
-                    fix="Pre-index nested collections into hash maps or dictionary lookups to achieve constant-time O(1) lookups."
+                    fix="Pre-index nested collections into hash maps or dictionary lookups to achieve constant-time O(1) lookups.",
                 )
             )
         elif loops == 1:
@@ -213,7 +231,7 @@ class LocalFallbackProvider(BaseAIProvider):
                     optimized_time="O(N)",
                     space="O(1)",
                     memory_impact="Low",
-                    fix="Consider using stream operations, list comprehensions, or vectorized operations."
+                    fix="Consider using stream operations, list comprehensions, or vectorized operations.",
                 )
             )
 
@@ -226,7 +244,7 @@ class LocalFallbackProvider(BaseAIProvider):
                     optimized_time="O(N)",
                     space="O(1)",
                     memory_impact="Low",
-                    fix="Use Python's built-in enumerate() iterator for index-value tuples."
+                    fix="Use Python's built-in enumerate() iterator for index-value tuples.",
                 )
             )
 
@@ -234,33 +252,33 @@ class LocalFallbackProvider(BaseAIProvider):
         if lang_lower in ["python", "py"]:
             has_type_hints = ":" in code and "->" in code
             has_docstrings = '"""' in code or "'''" in code
-            
+
             code_review.append(
                 CodeReviewItem(
                     category="Type Safety & Annotations",
                     status="pass" if has_type_hints else "warn",
-                    suggestion="Add explicit Python type hints (PEP 484) to function arguments and return types to improve IDE intellisense."
+                    suggestion="Add explicit Python type hints (PEP 484) to function arguments and return types to improve IDE intellisense.",
                 )
             )
             code_review.append(
                 CodeReviewItem(
                     category="Documentation & Docstrings",
                     status="pass" if has_docstrings else "warn",
-                    suggestion="Add inline PEP 257 docstrings to functions and classes outlining arguments, exceptions, and return contracts."
+                    suggestion="Add inline PEP 257 docstrings to functions and classes outlining arguments, exceptions, and return contracts.",
                 )
             )
             code_review.append(
                 CodeReviewItem(
                     category="SOLID Architecture & Modular Design",
                     status="pass" if len(code_lines) < 40 else "warn",
-                    suggestion="Ensure functions follow Single Responsibility Principle (SRP) by decoupling database access from business logic."
+                    suggestion="Ensure functions follow Single Responsibility Principle (SRP) by decoupling database access from business logic.",
                 )
             )
             code_review.append(
                 CodeReviewItem(
                     category="DRY Principle (Don't Repeat Yourself)",
                     status="pass" if loops < 2 else "warn",
-                    suggestion="Avoid duplicate nested loop lookups; extract reusable mapping helpers into standalone utilities."
+                    suggestion="Avoid duplicate nested loop lookups; extract reusable mapping helpers into standalone utilities.",
                 )
             )
         else:
@@ -268,23 +286,31 @@ class LocalFallbackProvider(BaseAIProvider):
                 CodeReviewItem(
                     category="Code Structuring & Readability",
                     status="pass",
-                    suggestion="Format code consistent with language style conventions and clean code guidelines."
+                    suggestion="Format code consistent with language style conventions and clean code guidelines.",
                 )
             )
             code_review.append(
                 CodeReviewItem(
                     category="Error Resilience",
                     status="pass" if len(issues) == 0 else "warn",
-                    suggestion="Ensure all asynchronous calls and database operations are wrapped in explicit try-catch error boundaries."
+                    suggestion="Ensure all asynchronous calls and database operations are wrapped in explicit try-catch error boundaries.",
                 )
             )
 
         # ---------------- 5. DYNAMIC MATHEMATICAL SCORE COMPUTATION ----------------
         # Count severities
-        crit_count = sum(1 for i in issues if i.severity == "critical") + sum(1 for s in security if s.severity == "critical")
-        high_count = sum(1 for i in issues if i.severity == "high") + sum(1 for s in security if s.severity == "high")
-        med_count = sum(1 for i in issues if i.severity == "medium") + sum(1 for s in security if s.severity == "medium")
-        low_count = sum(1 for i in issues if i.severity == "low") + sum(1 for s in security if s.severity == "low")
+        crit_count = sum(1 for i in issues if i.severity == "critical") + sum(
+            1 for s in security if s.severity == "critical"
+        )
+        high_count = sum(1 for i in issues if i.severity == "high") + sum(
+            1 for s in security if s.severity == "high"
+        )
+        med_count = sum(1 for i in issues if i.severity == "medium") + sum(
+            1 for s in security if s.severity == "medium"
+        )
+        low_count = sum(1 for i in issues if i.severity == "low") + sum(
+            1 for s in security if s.severity == "low"
+        )
 
         # Mathematical Deductions:
         # Base = 100
@@ -303,13 +329,13 @@ class LocalFallbackProvider(BaseAIProvider):
         deductions += len(performance) * 8
 
         if not ('"""' in code or "'''" in code or "/**" in code):
-            deductions += 3 # Missing docs penalty
+            deductions += 3  # Missing docs penalty
 
         if any(cr.status == "warn" for cr in code_review):
-            deductions += 5 # Maintainability penalty
+            deductions += 5  # Maintainability penalty
 
         if loops >= 2:
-            deductions += 15 # O(N^2) complexity penalty
+            deductions += 15  # O(N^2) complexity penalty
 
         # Dynamic Scores
         health_score = max(0, min(100, 100 - deductions))
@@ -326,24 +352,31 @@ class LocalFallbackProvider(BaseAIProvider):
 
         # ---------------- 6. REFACTORED CODE & WHY BETTER ----------------
         time_comp = "O(N^2)" if loops >= 2 else ("O(N)" if loops == 1 else "O(1)")
-        space_comp = "O(N)" if any(kw in code_lower for kw in ["append", "push", "list", "dict", "map", "set", "[]", "{}"]) else "O(1)"
+        space_comp = (
+            "O(N)"
+            if any(
+                kw in code_lower
+                for kw in ["append", "push", "list", "dict", "map", "set", "[]", "{}"]
+            )
+            else "O(1)"
+        )
 
         if lang_lower in ["python", "py"]:
-            opt_code = f'"""\nOptimized CodeMedic AI Senior Engineer Rewrite\n'
-            opt_code += f'Target Language : {language.capitalize()}\n'
-            opt_code += f'Time Complexity : {time_comp} -> O(1) Optimized\n'
-            opt_code += f'Space Complexity: {space_comp}\n'
+            opt_code = '"""\nOptimized CodeMedic AI Senior Engineer Rewrite\n'
+            opt_code += f"Target Language : {language.capitalize()}\n"
+            opt_code += f"Time Complexity : {time_comp} -> O(1) Optimized\n"
+            opt_code += f"Space Complexity: {space_comp}\n"
             opt_code += '"""\n\n'
             opt_code += "from typing import Any, Dict, List, Optional\n"
             opt_code += "import logging\n"
             opt_code += "from dataclasses import dataclass\n\n"
             opt_code += "logger = logging.getLogger(__name__)\n\n"
-            
+
             clean_lines = []
             for line in code_lines:
-                l = line.replace("except:", "except (ValueError, KeyError) as err:")
-                l = re.sub(r"print\s+(['\"].*?['\"])", r"print(\1)", l)
-                clean_lines.append(l)
+                mod_line = line.replace("except:", "except (ValueError, KeyError) as err:")
+                mod_line = re.sub(r"print\s+(['\"].*?['\"])", r"print(\1)", mod_line)
+                clean_lines.append(mod_line)
             opt_code += "\n".join(clean_lines)
 
             why_better = (
@@ -356,9 +389,9 @@ class LocalFallbackProvider(BaseAIProvider):
             opt_code = f"/**\n * CodeMedic AI Optimized Senior Engineer Rewrite\n * Language: {language.capitalize()} | Time: {time_comp} -> O(1)\n */\n\n"
             clean_lines = []
             for line in code_lines:
-                l = re.sub(r"\bvar\s+", "const ", line)
-                l = l.replace("==", "===")
-                clean_lines.append(l)
+                mod_line = re.sub(r"\bvar\s+", "const ", line)
+                mod_line = mod_line.replace("==", "===")
+                clean_lines.append(mod_line)
             opt_code += "\n".join(clean_lines)
             why_better = "Replaced legacy var keyword with block-scoped const/let, enforced strict type equality (===), and sanitized dynamic input handling."
 
@@ -393,7 +426,7 @@ class LocalFallbackProvider(BaseAIProvider):
         # ---------------- 8. UNIT TESTS SYNTHESIS ----------------
         if lang_lower in ["python", "py"]:
             tests = [
-                f"# Production Unit Test Suite for {primary_func}\nimport unittest\nfrom code_module import {primary_func}\n\nclass TestCodeMedicEngine(unittest.TestCase):\n    def test_{primary_func}_valid_input(self):\n        \"\"\"Verify standard execution pathway with valid data.\"\"\"\n        # TODO: Add assertions\n        self.assertTrue(True)\n\n    def test_{primary_func}_boundary_conditions(self):\n        \"\"\"Verify null and boundary input assertions.\"\"\"\n        with self.assertRaises((ValueError, TypeError)):\n            # Verify empty payload rejection\n            pass",
+                f'# Production Unit Test Suite for {primary_func}\nimport unittest\nfrom code_module import {primary_func}\n\nclass TestCodeMedicEngine(unittest.TestCase):\n    def test_{primary_func}_valid_input(self):\n        """Verify standard execution pathway with valid data."""\n        # TODO: Add assertions\n        self.assertTrue(True)\n\n    def test_{primary_func}_boundary_conditions(self):\n        """Verify null and boundary input assertions."""\n        with self.assertRaises((ValueError, TypeError)):\n            # Verify empty payload rejection\n            pass',
             ]
         elif lang_lower in ["javascript", "typescript", "js", "ts"]:
             tests = [
@@ -426,7 +459,7 @@ class LocalFallbackProvider(BaseAIProvider):
                 space=space_comp,
                 explanation=f"Measured execution footprint: {time_comp} asymptotic time and {space_comp} memory allocation.",
                 cyclomatic_complexity=loops + 2,
-                maintainability_index=health_score
+                maintainability_index=health_score,
             ),
             tests=tests,
             confidence=95,
