@@ -26,6 +26,11 @@ except (OperationalError, Exception) as e:
     )
     engine = create_engine("sqlite:///./codemedic.db", connect_args={"check_same_thread": False})
 
+# Ensure tables are auto-created on session initialization
+from app.database.base import Base  # noqa: E402
+
+Base.metadata.create_all(bind=engine)
+
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 
 
