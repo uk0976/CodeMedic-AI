@@ -1,10 +1,10 @@
 import json
 import logging
+import os
 import re
 from typing import TypeVar
 from pydantic import BaseModel
 
-import google.generativeai as genai
 from app.core.config import get_settings
 from app.services.providers.base import BaseAIProvider
 
@@ -15,14 +15,17 @@ T = TypeVar("T", bound=BaseModel)
 
 class GeminiProvider(BaseAIProvider):
     def __init__(self, api_key: str | None = None) -> None:
-        key = api_key or (settings.groq_api_key.get_secret_value() if settings.groq_api_key else None)
-        # Check environment variable for GEMINI_API_KEY if present
-        import os
-        key = key or os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+        try:
+            import google.generativeai as genai
+            self.genai = genai
+        except ImportError as e:
+            raise ValueError(f"google-generativeai package is not installed: {e}")
+
+        key = api_key or os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
         if not key:
             raise ValueError("GEMINI_API_KEY / GOOGLE_API_KEY is not configured.")
-        genai.configure(api_key=key)
-        self.model = genai.GenerativeModel("gemini-1.5-flash")
+        self.genai.configure(api_key=key)
+        self.model = self.genai.GenerativeModel("gemini-1.5-flash")
 
     def generate_structured_output(
         self,
