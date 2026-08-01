@@ -22,6 +22,7 @@ import {
   BookOpen,
 } from "lucide-react";
 import { DiffEditor } from "@monaco-editor/react";
+import { env } from "@/lib/env";
 
 export interface AnalysisData {
   code_health_score?: number;
@@ -170,7 +171,7 @@ export function FullAnalysisReport({
           {reportId && (
             <>
               <a
-                href={`/api/v1/reports/${reportId}/export/pdf`}
+                href={`${env.apiUrl}/api/v1/reports/${reportId}/export/pdf`}
                 target="_blank"
                 rel="noreferrer"
                 className="flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-800 px-3.5 py-2 text-xs font-semibold text-slate-200 transition hover:bg-slate-700"
@@ -178,7 +179,7 @@ export function FullAnalysisReport({
                 <Download className="h-4 w-4 text-cyan-400" /> PDF Report
               </a>
               <a
-                href={`/api/v1/reports/${reportId}/export/markdown`}
+                href={`${env.apiUrl}/api/v1/reports/${reportId}/export/markdown`}
                 target="_blank"
                 rel="noreferrer"
                 className="flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-800 px-3.5 py-2 text-xs font-semibold text-slate-200 transition hover:bg-slate-700"
@@ -186,7 +187,7 @@ export function FullAnalysisReport({
                 <FileText className="h-4 w-4 text-purple-400" /> Markdown
               </a>
               <a
-                href={`/api/v1/reports/${reportId}/export/json`}
+                href={`${env.apiUrl}/api/v1/reports/${reportId}/export/json`}
                 target="_blank"
                 rel="noreferrer"
                 className="flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-800 px-3.5 py-2 text-xs font-semibold text-slate-200 transition hover:bg-slate-700"
@@ -220,7 +221,7 @@ export function FullAnalysisReport({
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">
         {/* Overall Code Health */}
         <div
-          className={`rounded-xl border p-4 ${getScoreColor(healthScore)} flex flex-col justify-between`}
+          className={`flex flex-col justify-between rounded-xl border p-4 ${getScoreColor(healthScore)}`}
         >
           <span className="text-xs font-medium uppercase tracking-wider text-slate-400">
             Code Health
@@ -239,7 +240,7 @@ export function FullAnalysisReport({
 
         {/* Security Score */}
         <div
-          className={`rounded-xl border p-4 ${getScoreColor(securityScore)} flex flex-col justify-between`}
+          className={`flex flex-col justify-between rounded-xl border p-4 ${getScoreColor(securityScore)}`}
         >
           <span className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-slate-400">
             <ShieldCheck className="h-3.5 w-3.5 text-cyan-400" /> Security Rating
@@ -255,7 +256,7 @@ export function FullAnalysisReport({
 
         {/* Performance Score */}
         <div
-          className={`rounded-xl border p-4 ${getScoreColor(performanceScore)} flex flex-col justify-between`}
+          className={`flex flex-col justify-between rounded-xl border p-4 ${getScoreColor(performanceScore)}`}
         >
           <span className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-slate-400">
             <Zap className="h-3.5 w-3.5 text-amber-400" /> Performance
@@ -273,7 +274,7 @@ export function FullAnalysisReport({
 
         {/* Maintainability Index */}
         <div
-          className={`rounded-xl border p-4 ${getScoreColor(maintainabilityScore)} flex flex-col justify-between`}
+          className={`flex flex-col justify-between rounded-xl border p-4 ${getScoreColor(maintainabilityScore)}`}
         >
           <span className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-slate-400">
             <BookOpen className="h-3.5 w-3.5 text-purple-400" /> Maintainability
