@@ -1,6 +1,7 @@
 import logging
 import time
 from typing import TypeVar
+
 from openai import APIError, APITimeoutError, OpenAI, RateLimitError
 from pydantic import BaseModel
 
