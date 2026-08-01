@@ -10,8 +10,7 @@ import { FullAnalysisReport } from "@/components/editor/full-analysis-report";
 import { QuickModeCards, AnalysisMode } from "@/components/editor/quick-mode-cards";
 import { UploadZone } from "@/components/editor/upload-zone";
 import { motion, AnimatePresence } from "framer-motion";
-import { useSearchParams, useRouter } from "next/navigation";
-import { ChevronRight, FileText, Code2, X } from "lucide-react";
+import { FileText, Code2 } from "lucide-react";
 import { env } from "@/lib/env";
 import {
   PanelLeftClose,
@@ -73,9 +72,6 @@ function EditorWorkspacePageContent() {
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
   const [loadingMessage, setLoadingMessage] = useState<string | null>(null);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
-
-  const searchParams = useSearchParams();
-  const router = useRouter();
 
   // Responsive Layout Panels States
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
@@ -281,7 +277,7 @@ function EditorWorkspacePageContent() {
                 if (data.error) {
                   throw new Error(data.error);
                 }
-              } catch (e) {
+              } catch {
                 // Ignore chunk parse errors
               }
             }
@@ -309,14 +305,15 @@ function EditorWorkspacePageContent() {
             const savedData = await saveRes.json();
             setSavedReportId(savedData.id);
           }
-        } catch (e) {
-          console.warn("Failed to persist report to DB", e);
+        } catch {
+          // Ignore save report errors
         }
       } else {
         throw new Error("Did not receive final analysis results from backend.");
       }
-    } catch (err: any) {
-      setAnalysisError(err.message || "An error occurred during code analysis.");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setAnalysisError(msg || "An error occurred during code analysis.");
       setEditorStatus("Ready");
     } finally {
       setIsAnalyzing(false);
