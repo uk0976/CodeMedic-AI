@@ -11,7 +11,7 @@ import { QuickModeCards, AnalysisMode } from "@/components/editor/quick-mode-car
 import { UploadZone } from "@/components/editor/upload-zone";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSearchParams, useRouter } from "next/navigation";
-import { ChevronRight, FileText, Code2 } from "lucide-react";
+import { ChevronRight, FileText, Code2, X } from "lucide-react";
 import { env } from "@/lib/env";
 import {
   PanelLeftClose,
@@ -76,17 +76,20 @@ function EditorWorkspacePageContent() {
 
   const searchParams = useSearchParams();
   const router = useRouter();
-  const tourStep = searchParams.get("tour");
 
-  const skipTour = () => {
-    router.push("/analyze");
-  };
-
-  // UX Layout Panels States
+  // Responsive Layout Panels States
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
   const [rightPanelOpen, setRightPanelOpen] = useState<boolean>(true);
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [showShortcuts, setShowShortcuts] = useState<boolean>(false);
+
+  // Auto-collapse panels on smaller screens (< 1024px) for mobile UX
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.innerWidth < 1024) {
+      setSidebarOpen(false);
+      setRightPanelOpen(false);
+    }
+  }, []);
 
   // Selected Analysis Mode
   const [analysisType, setAnalysisType] = useState<AnalysisMode>("Bug Detection");
@@ -152,6 +155,9 @@ function EditorWorkspacePageContent() {
     setAnalysisResults(null);
     setSavedReportId(undefined);
     setAnalysisError(null);
+    if (typeof window !== "undefined" && window.innerWidth < 1024) {
+      setSidebarOpen(false);
+    }
   };
 
   const handleLoadTemplate = (name: string, content: string, lang: string) => {
@@ -165,6 +171,9 @@ function EditorWorkspacePageContent() {
     setAnalysisResults(null);
     setSavedReportId(undefined);
     setAnalysisError(null);
+    if (typeof window !== "undefined" && window.innerWidth < 1024) {
+      setSidebarOpen(false);
+    }
   };
 
   const getExtension = (lang: string) => {
@@ -250,122 +259,106 @@ function EditorWorkspacePageContent() {
         throw new Error("Failed to open response stream from backend.");
       }
 
-      let buffer = "";
-      let finalResult = null;
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
+      let done = false;
+      let accumulatedResult: AnalysisResult | null = null;
 
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split("\n");
-        buffer = lines.pop() || "";
-
-        for (const line of lines) {
-          const trimmed = line.trim();
-          if (trimmed.startsWith("data: ")) {
-            const dataStr = trimmed.slice(6).trim();
-            if (!dataStr) continue;
-
-            const payload = JSON.parse(dataStr);
-            if (payload.status) {
-              setLoadingMessage(payload.status);
-            } else if (payload.result) {
-              finalResult = payload.result;
-              setAnalysisResults(payload.result);
-            } else if (payload.error) {
-              setAnalysisError(payload.error);
+      while (!done) {
+        const { value, done: doneReading } = await reader.read();
+        done = doneReading;
+        if (value) {
+          const chunk = decoder.decode(value, { stream: true });
+          const lines = chunk.split("\n\n");
+          for (const line of lines) {
+            if (line.startsWith("data: ")) {
+              try {
+                const data = JSON.parse(line.replace("data: ", ""));
+                if (data.status) {
+                  setLoadingMessage(data.status);
+                }
+                if (data.result) {
+                  accumulatedResult = data.result;
+                }
+                if (data.error) {
+                  throw new Error(data.error);
+                }
+              } catch (e) {
+                // Ignore chunk parse errors
+              }
             }
           }
         }
       }
 
-      if (buffer.trim().startsWith("data: ")) {
-        const dataStr = buffer.trim().slice(6).trim();
-        if (dataStr) {
-          const payload = JSON.parse(dataStr);
-          if (payload.result) {
-            finalResult = payload.result;
-            setAnalysisResults(payload.result);
-          } else if (payload.error) {
-            setAnalysisError(payload.error);
-          }
-        }
-      }
+      if (accumulatedResult) {
+        setAnalysisResults(accumulatedResult);
+        setEditorStatus("Saved");
 
-      if (finalResult) {
+        // Save report to backend
         try {
           const saveRes = await fetch(`${env.apiUrl}/api/v1/reports/`, {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              file_name: fileName,
+              title: `${fileName} - ${analysisType}`,
               language: language,
-              analysis_type: analysisType,
-              code_quality_score: finalResult.code_health_score || finalResult.confidence || 85,
-              bug_count: (finalResult.issues?.length || 0) + (finalResult.security?.length || 0),
-              security_score:
-                finalResult.security_score ||
-                Math.max(0, 100 - (finalResult.security?.length || 0) * 15),
-              analysis_duration: Math.floor(Math.random() * 4) + 2,
-              confidence: finalResult.confidence || 95,
-              code: code,
-              optimized_code: finalResult.optimized_code || code,
-              summary: finalResult.summary || "Code diagnostics completed successfully.",
-              code_explanation: finalResult.code_explanation,
-              why_better: finalResult.why_better,
-              issues: finalResult.issues || [],
-              security: finalResult.security || [],
-              performance: finalResult.performance || [],
-              code_review: finalResult.code_review || [],
-              complexity: finalResult.complexity || {},
-              tests: finalResult.tests || [],
+              code_content: code,
+              analysis_results: accumulatedResult,
             }),
           });
           if (saveRes.ok) {
             const savedData = await saveRes.json();
             setSavedReportId(savedData.id);
           }
-        } catch (saveErr) {
-          console.error("Failed to save report to history repository:", saveErr);
+        } catch (e) {
+          console.warn("Failed to persist report to DB", e);
         }
-        // Auto-switch to full-page report workspace
-        setViewMode("report");
+      } else {
+        throw new Error("Did not receive final analysis results from backend.");
       }
-    } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "An unexpected error occurred during code analysis.";
-      setAnalysisError(message);
+    } catch (err: any) {
+      setAnalysisError(err.message || "An error occurred during code analysis.");
+      setEditorStatus("Ready");
     } finally {
       setIsAnalyzing(false);
-      setEditorStatus("Saved");
+      setLoadingMessage(null);
     }
   };
 
   return (
-    <div className="flex h-screen w-screen select-none overflow-hidden bg-[#060814] font-sans text-slate-100">
-      {/* 1. Left Sidebar Navigation */}
+    <div className="flex h-screen w-screen overflow-hidden bg-[#070913]">
+      {/* 1. Left Explorer Sidebar (Desktop + Mobile Overlay Drawer) */}
       <AnimatePresence mode="wait">
         {sidebarOpen && (
-          <motion.div
-            initial={{ width: 0, opacity: 0 }}
-            animate={{ width: 256, opacity: 1 }}
-            exit={{ width: 0, opacity: 0 }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="hidden h-full shrink-0 lg:block"
-          >
-            <EditorSidebar
-              onNewAnalysis={handleNewAnalysis}
-              onSelectRecentFile={handleFileLoaded}
-              onTriggerUpload={() => {
-                const fileInput = document.querySelector("input[type='file']") as HTMLInputElement;
-                fileInput?.click();
-              }}
-              onLoadTemplate={handleLoadTemplate}
-              supportedLanguages={supportedLanguages}
+          <>
+            {/* Mobile Backdrop overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSidebarOpen(false)}
+              className="fixed inset-0 z-40 bg-slate-950/70 backdrop-blur-sm lg:hidden"
             />
-          </motion.div>
+            <motion.div
+              initial={{ x: "-100%", opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: "-100%", opacity: 0 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="fixed inset-y-0 left-0 z-50 w-72 shrink-0 bg-[#070913] shadow-2xl lg:relative lg:inset-auto lg:z-auto lg:w-64 lg:shadow-none"
+            >
+              <EditorSidebar
+                onNewAnalysis={handleNewAnalysis}
+                onSelectRecentFile={handleFileLoaded}
+                onTriggerUpload={() => {
+                  const fileInput = document.querySelector(
+                    "input[type='file']",
+                  ) as HTMLInputElement;
+                  fileInput?.click();
+                }}
+                onLoadTemplate={handleLoadTemplate}
+                supportedLanguages={supportedLanguages}
+              />
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
 
@@ -393,8 +386,8 @@ function EditorWorkspacePageContent() {
         />
 
         {/* Panel Control Toggles & View Mode Switcher */}
-        <div className="px-4.5 flex items-center justify-between border-b border-slate-900 bg-slate-950/20 py-1.5 text-xs font-medium text-slate-500">
-          <div className="flex items-center gap-3">
+        <div className="md:px-4.5 flex items-center justify-between border-b border-slate-900 bg-slate-950/20 px-3 py-1.5 text-xs font-medium text-slate-500">
+          <div className="flex items-center gap-2 md:gap-3">
             <button
               type="button"
               onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -406,7 +399,7 @@ function EditorWorkspacePageContent() {
               ) : (
                 <PanelLeftOpen className="size-4" />
               )}
-              <span className="hidden sm:inline">Explorer</span>
+              <span className="inline text-[11px] md:text-xs">Explorer</span>
             </button>
 
             {analysisResults && (
@@ -415,51 +408,51 @@ function EditorWorkspacePageContent() {
                 <div className="flex items-center gap-1 rounded-lg border border-slate-800 bg-slate-900 p-0.5">
                   <button
                     onClick={() => setViewMode("editor")}
-                    className={`flex items-center gap-1.5 rounded px-2.5 py-1 text-[11px] font-semibold transition ${
+                    className={`flex items-center gap-1 rounded px-2 py-1 text-[10px] font-semibold transition md:px-2.5 md:text-[11px] ${
                       viewMode === "editor"
                         ? "bg-blue-600 text-white"
                         : "text-slate-400 hover:text-slate-200"
                     }`}
                   >
-                    <Code2 className="h-3.5 w-3.5" /> Monaco Editor
+                    <Code2 className="h-3.5 w-3.5" /> Monaco
                   </button>
                   <button
                     onClick={() => setViewMode("report")}
-                    className={`flex items-center gap-1.5 rounded px-2.5 py-1 text-[11px] font-semibold transition ${
+                    className={`flex items-center gap-1 rounded px-2 py-1 text-[10px] font-semibold transition md:px-2.5 md:text-[11px] ${
                       viewMode === "report"
                         ? "bg-blue-600 text-white"
                         : "text-slate-400 hover:text-slate-200"
                     }`}
                   >
-                    <FileText className="h-3.5 w-3.5" /> Full Audit Report
+                    <FileText className="h-3.5 w-3.5" /> Audit Report
                   </button>
                 </div>
               </>
             )}
 
-            <div className="h-3 w-[1px] bg-slate-800" />
+            <div className="hidden h-3 w-[1px] bg-slate-800 md:block" />
             <button
               type="button"
               onClick={() => setShowShortcuts(!showShortcuts)}
-              className="flex items-center gap-1 transition hover:text-white"
+              className="hidden items-center gap-1 transition hover:text-white md:flex"
             >
               <Keyboard className="size-4" />
-              <span className="hidden sm:inline">Keyboard Shortcuts</span>
+              <span>Shortcuts</span>
             </button>
           </div>
 
-          <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1 rounded border border-slate-900 bg-slate-950 px-2 py-0.5 text-[10px] text-slate-600">
-              <Info className="size-3" /> Drag & Drop any source file here
+          <div className="flex items-center gap-2 md:gap-3">
+            <span className="hidden items-center gap-1 rounded border border-slate-900 bg-slate-950 px-2 py-0.5 text-[10px] text-slate-600 sm:flex">
+              <Info className="size-3" /> Drag & Drop code
             </span>
-            <div className="h-3 w-[1px] bg-slate-800" />
+            <div className="hidden h-3 w-[1px] bg-slate-800 sm:block" />
             <button
               type="button"
               onClick={() => setRightPanelOpen(!rightPanelOpen)}
               className="flex items-center gap-1 transition hover:text-white"
               title="Toggle AI Preview Panel"
             >
-              <span className="hidden sm:inline">AI Preview</span>
+              <span className="inline text-[11px] md:text-xs">AI Preview</span>
               {rightPanelOpen ? (
                 <PanelRightClose className="size-4" />
               ) : (
@@ -545,7 +538,7 @@ function EditorWorkspacePageContent() {
                     options={{
                       fontSize: fontSize,
                       wordWrap: wordWrap ? "on" : "off",
-                      minimap: { enabled: true },
+                      minimap: { enabled: false },
                       automaticLayout: true,
                       tabSize: 4,
                       lineHeight: 22,
@@ -604,9 +597,9 @@ function EditorWorkspacePageContent() {
             </div>
           )}
 
-          {/* Keyboard Shortcuts Dialog Overlay */}
+          {/* Keyboard Shortcuts Dialog */}
           {showShortcuts && (
-            <div className="absolute inset-0 z-30 flex items-center justify-center bg-slate-950/80 p-6 backdrop-blur-sm">
+            <div className="backdrop-blur-xs absolute inset-0 z-40 flex items-center justify-center bg-slate-950/70 p-4">
               <div className="glass-panel w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900/90 p-6">
                 <div className="mb-4 flex items-center justify-between border-b border-slate-800/80 pb-3">
                   <span className="flex items-center gap-2 text-sm font-bold text-white">
@@ -675,143 +668,40 @@ function EditorWorkspacePageContent() {
         />
       </div>
 
-      {/* 3. Right AI Analysis Preview Panel */}
+      {/* 3. Right AI Analysis Preview Panel (Desktop + Mobile Drawer Overlay) */}
       <AnimatePresence mode="wait">
         {rightPanelOpen && viewMode === "editor" && (
-          <motion.div
-            initial={{ width: 0, opacity: 0 }}
-            animate={{ width: 320, opacity: 1 }}
-            exit={{ width: 0, opacity: 0 }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="hidden h-full shrink-0 xl:block"
-          >
-            <EditorRightPanel
-              language={language}
-              totalChars={totalChars}
-              analysisType={analysisType}
-              results={analysisResults}
-              onApplyFix={(newCode) => {
-                setCode(newCode);
-                setEditorStatus("Saved");
-              }}
+          <>
+            {/* Mobile Backdrop overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setRightPanelOpen(false)}
+              className="fixed inset-0 z-40 bg-slate-950/70 backdrop-blur-sm xl:hidden"
             />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Guided Tour Overlays */}
-      <AnimatePresence>
-        {tourStep && (
-          <div className="pointer-events-none fixed inset-0 z-50">
-            {tourStep === "2" && (
-              <motion.div
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 15 }}
-                className="glass-panel pointer-events-auto absolute bottom-20 left-[280px] flex w-full max-w-sm flex-col space-y-3 rounded-2xl border border-cyan-500/30 bg-slate-950/95 p-5 shadow-[0_0_50px_rgba(6,182,212,0.25)]"
-              >
-                <div className="flex items-start justify-between">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-cyan-400">
-                    Tour • Step 2 of 6
-                  </span>
-                  <button
-                    onClick={skipTour}
-                    className="hover:text-slate-350 text-[10px] font-bold text-slate-500 transition"
-                  >
-                    Skip
-                  </button>
-                </div>
-                <h3 className="text-xs font-bold leading-tight text-white">
-                  Monaco Code Editor Workspace
-                </h3>
-                <p className="text-[11px] leading-relaxed text-slate-400">
-                  Features autocomplete, folding, search/replace, and file upload zones.
-                </p>
-                <div className="flex justify-end pt-1">
-                  <button
-                    onClick={() => router.push("/analyze?tour=3")}
-                    className="flex items-center gap-1 rounded-lg bg-cyan-500 px-3.5 py-1.5 text-[10px] font-bold text-white transition hover:bg-cyan-600"
-                  >
-                    Next: Audit Trigger
-                    <ChevronRight className="size-3" />
-                  </button>
-                </div>
-              </motion.div>
-            )}
-
-            {tourStep === "3" && (
-              <motion.div
-                initial={{ opacity: 0, y: -15 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                className="glass-panel pointer-events-auto absolute left-1/2 top-24 flex w-full max-w-sm -translate-x-1/2 flex-col space-y-3 rounded-2xl border border-cyan-500/30 bg-slate-950/95 p-5 shadow-[0_0_50px_rgba(6,182,212,0.25)]"
-              >
-                <div className="flex items-start justify-between">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-cyan-400">
-                    Tour • Step 3 of 6
-                  </span>
-                  <button
-                    onClick={skipTour}
-                    className="hover:text-slate-350 text-[10px] font-bold text-slate-500 transition"
-                  >
-                    Skip
-                  </button>
-                </div>
-                <h3 className="text-xs font-bold leading-tight text-white">
-                  AI Diagnostics Launcher
-                </h3>
-                <p className="text-[11px] leading-relaxed text-slate-400">
-                  Choose audit modes (Bug scans, Security audits, Performance tuning) and click
-                  &quot;Analyze Code&quot;.
-                </p>
-                <div className="flex justify-end pt-1">
-                  <button
-                    onClick={() => router.push("/analyze?tour=4")}
-                    className="flex items-center gap-1 rounded-lg bg-cyan-500 px-3.5 py-1.5 text-[10px] font-bold text-white transition hover:bg-cyan-600"
-                  >
-                    Next: View Results
-                    <ChevronRight className="size-3" />
-                  </button>
-                </div>
-              </motion.div>
-            )}
-
-            {tourStep === "4" && (
-              <motion.div
-                initial={{ opacity: 0, x: 15 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 15 }}
-                className="glass-panel pointer-events-auto absolute bottom-20 right-[350px] flex w-full max-w-sm flex-col space-y-3 rounded-2xl border border-cyan-500/30 bg-slate-950/95 p-5 shadow-[0_0_50px_rgba(6,182,212,0.25)]"
-              >
-                <div className="flex items-start justify-between">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-cyan-400">
-                    Tour • Step 4 of 6
-                  </span>
-                  <button
-                    onClick={skipTour}
-                    className="hover:text-slate-350 text-[10px] font-bold text-slate-500 transition"
-                  >
-                    Skip
-                  </button>
-                </div>
-                <h3 className="text-xs font-bold leading-tight text-white">
-                  Audits Insights & Fixes
-                </h3>
-                <p className="text-[11px] leading-relaxed text-slate-400">
-                  Review security, performance, bugs, and apply fixes back into Monaco.
-                </p>
-                <div className="flex justify-end pt-1">
-                  <button
-                    onClick={() => router.push("/reports?tour=5")}
-                    className="flex items-center gap-1 rounded-lg bg-cyan-500 px-3.5 py-1.5 text-[10px] font-bold text-white transition hover:bg-cyan-600"
-                  >
-                    Next: Reports History
-                    <ChevronRight className="size-3" />
-                  </button>
-                </div>
-              </motion.div>
-            )}
-          </div>
+            <motion.div
+              initial={{ x: "100%", opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: "100%", opacity: 0 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="fixed inset-y-0 right-0 z-50 w-80 shrink-0 bg-[#070913] shadow-2xl xl:relative xl:inset-auto xl:z-auto xl:w-80 xl:shadow-none"
+            >
+              <EditorRightPanel
+                language={language}
+                totalChars={totalChars}
+                analysisType={analysisType}
+                results={analysisResults}
+                onApplyFix={(newCode) => {
+                  setCode(newCode);
+                  setEditorStatus("Saved");
+                  if (typeof window !== "undefined" && window.innerWidth < 1280) {
+                    setRightPanelOpen(false);
+                  }
+                }}
+              />
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
     </div>
@@ -820,7 +710,13 @@ function EditorWorkspacePageContent() {
 
 export default function EditorWorkspacePage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#060814]" />}>
+    <Suspense
+      fallback={
+        <div className="flex h-screen w-screen items-center justify-center bg-[#070913] text-slate-400">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-cyan-500/20 border-t-cyan-400" />
+        </div>
+      }
+    >
       <EditorWorkspacePageContent />
     </Suspense>
   );
