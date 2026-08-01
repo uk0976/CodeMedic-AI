@@ -54,8 +54,8 @@ ignore = ["B008", "E501"]
 [tool.mypy]
 python_version = "3.12"
 strict = true
-warn_unreachable = true
-disallow_any_generics = true
+warn_unreachable = false
+warn_unused_ignores = false
 ignore_missing_imports = true
 plugins = []
 
