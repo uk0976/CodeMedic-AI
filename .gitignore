@@ -21,3 +21,4 @@ backend/*.egg-info/
 Thumbs.db
 .idea/
 .vscode/
+~$*

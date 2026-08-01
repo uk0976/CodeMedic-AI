@@ -5,95 +5,101 @@ from pptx.util import Inches, Pt
 from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
 from pptx.enum.shapes import MSO_SHAPE
 from pptx.dml.color import RGBColor
-from PIL import Image, ImageDraw, ImageFont
 
-# Define Color Palette
-BG_DARK = RGBColor(11, 15, 25)         # #0B0F19 Deep Obsidian
-CARD_BG = RGBColor(19, 28, 49)        # #131C31 Dark Slate Card
-CARD_BG_ALT = RGBColor(15, 23, 42)    # #0F172A Card Alt
-PRIMARY_BLUE = RGBColor(37, 99, 235)  # #2563EB
-CYAN = RGBColor(6, 182, 212)          # #06B6D4
-SKY_BLUE = RGBColor(56, 189, 248)     # #38BDF8
-PURPLE = RGBColor(124, 58, 237)       # #7C3AED
-AMBER = RGBColor(245, 158, 11)        # #F59E0B
-GREEN = RGBColor(52, 211, 153)        # #34D399
-RED = RGBColor(248, 113, 113)         # #F87171
+# Define Color Palette (Dark Obsidian Glassmorphism)
+BG_DARK = RGBColor(11, 15, 25)           # #0B0F19 Deep Obsidian Background
+CARD_BG = RGBColor(19, 28, 49)          # #131C31 Dark Slate Card Fill
+CARD_BG_ALT = RGBColor(15, 23, 42)      # #0F172A Dark Slate Card Alt
+PRIMARY_BLUE = RGBColor(37, 99, 235)    # #2563EB Vibrant Blue
+CYAN = RGBColor(6, 182, 212)            # #06B6D4 Electric Cyan
+SKY_BLUE = RGBColor(56, 189, 248)       # #38BDF8 Sky Blue
+PURPLE = RGBColor(124, 58, 237)         # #7C3AED Neon Purple
+PURPLE_DARK = RGBColor(46, 16, 101)     # #2E1065 Deep Purple Fill
+INDIGO = RGBColor(79, 70, 229)          # #4F46E5 Indigo Accent
+AMBER = RGBColor(245, 158, 11)          # #F59E0B Amber Accent
+GREEN = RGBColor(52, 211, 153)          # #34D399 Mint Green
+RED = RGBColor(248, 113, 113)           # #F87171 Coral Red
 
-TEXT_WHITE = RGBColor(248, 250, 252)  # #F8FAFC
-TEXT_MUTED = RGBColor(148, 163, 184)  # #94A3B8
-TEXT_DIM = RGBColor(100, 116, 139)    # #64748B
-BORDER_GLOW = RGBColor(30, 58, 138)   # #1E3A8A Dark Blue Border
+TEXT_WHITE = RGBColor(248, 250, 252)    # #F8FAFC Crisp White Text
+TEXT_MUTED = RGBColor(148, 163, 184)    # #94A3B8 Slate 400 Muted Text
+TEXT_DIM = RGBColor(100, 116, 139)      # #64748B Dimmed Text
+BORDER_GLOW = RGBColor(30, 58, 138)     # #1E3A8A Dark Blue Glow Border
+BORDER_PURPLE = RGBColor(109, 40, 217)  # #6D28D9 Neon Purple Border
+BORDER_CYAN = RGBColor(14, 116, 144)    # #0E7490 Cyan Border
 
-FONT_TITLE = "Segoe UI"
-FONT_BODY = "Segoe UI"
+# Font Family: Times New Roman
+FONT_TITLE = "Times New Roman"
+FONT_BODY = "Times New Roman"
+
+MEDIA_DIR = os.path.join(os.path.dirname(__file__), "extracted_media")
 
 def create_presentation():
     prs = Presentation()
     prs.slide_width = Inches(13.333)
     prs.slide_height = Inches(7.5)
-    blank_layout = prs.slide_layouts[6] # Blank slide layout
+    blank_layout = prs.slide_layouts[6]
 
-    # Helper: Set background color
     def set_bg(slide):
         background = slide.background
         fill = background.fill
         fill.solid()
         fill.fore_color.rgb = BG_DARK
 
-    # Helper: Add Header
     def add_header(slide, badge_text, title_text, subtitle_text=""):
         # Category Badge
-        badge_box = slide.shapes.add_textbox(Inches(0.8), Inches(0.4), Inches(8.0), Inches(0.4))
+        badge_box = slide.shapes.add_textbox(Inches(0.8), Inches(0.4), Inches(8.0), Inches(0.35))
         tf = badge_box.text_frame
         tf.word_wrap = True
+        tf.margin_left = tf.margin_top = tf.margin_right = tf.margin_bottom = 0
         p = tf.paragraphs[0]
         p.text = badge_text.upper()
         p.font.name = FONT_TITLE
-        p.font.size = Pt(10)
+        p.font.size = Pt(10.5)
         p.font.bold = True
         p.font.color.rgb = CYAN
 
-        # Main Slide Title
-        title_box = slide.shapes.add_textbox(Inches(0.78), Inches(0.7), Inches(10.0), Inches(0.7))
+        # Main Title
+        title_box = slide.shapes.add_textbox(Inches(0.8), Inches(0.7), Inches(9.5), Inches(0.6))
         tf = title_box.text_frame
         tf.word_wrap = True
+        tf.margin_left = tf.margin_top = tf.margin_right = tf.margin_bottom = 0
         p = tf.paragraphs[0]
         p.text = title_text
         p.font.name = FONT_TITLE
-        p.font.size = Pt(28)
+        p.font.size = Pt(26)
         p.font.bold = True
         p.font.color.rgb = TEXT_WHITE
 
-        # Subtitle if present
+        # Subtitle
         if subtitle_text:
-            sub_box = slide.shapes.add_textbox(Inches(0.78), Inches(1.35), Inches(11.0), Inches(0.4))
+            sub_box = slide.shapes.add_textbox(Inches(0.8), Inches(1.32), Inches(10.0), Inches(0.4))
             tf = sub_box.text_frame
             tf.word_wrap = True
+            tf.margin_left = tf.margin_top = tf.margin_right = tf.margin_bottom = 0
             p = tf.paragraphs[0]
             p.text = subtitle_text
             p.font.name = FONT_BODY
             p.font.size = Pt(13)
+            p.font.italic = True
             p.font.color.rgb = TEXT_MUTED
 
-    # Helper: Add Animation Suggestion Badge
     def add_anim_badge(slide, text):
-        box = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(9.8), Inches(0.4), Inches(2.7), Inches(0.38))
+        box = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(9.4), Inches(0.4), Inches(3.1), Inches(0.38))
         box.fill.solid()
-        box.fill.fore_color.rgb = RGBColor(17, 24, 39)
-        box.line.color.rgb = PURPLE
-        box.line.width = Pt(1)
+        box.fill.fore_color.rgb = CARD_BG
+        box.line.color.rgb = BORDER_PURPLE
+        box.line.width = Pt(1.5)
         tf = box.text_frame
         tf.word_wrap = True
         p = tf.paragraphs[0]
         p.text = f"✨ ANIMATION: {text}"
         p.font.name = FONT_BODY
-        p.font.size = Pt(8.5)
+        p.font.size = Pt(9)
         p.font.bold = True
         p.font.color.rgb = SKY_BLUE
         p.alignment = PP_ALIGN.CENTER
 
-    # Helper: Add Styled Card Shape
-    def add_card(slide, left, top, width, height, bg_color=CARD_BG, border_color=BORDER_GLOW):
+    def add_glass_card(slide, left, top, width, height, bg_color=CARD_BG, border_color=BORDER_GLOW):
         shape = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, left, top, width, height)
         shape.fill.solid()
         shape.fill.fore_color.rgb = bg_color
@@ -104,807 +110,998 @@ def create_presentation():
             shape.line.fill.background()
         return shape
 
-    # Helper: Add Footer
-    def add_footer(slide, current_slide, total_slides=14):
-        foot_box = slide.shapes.add_textbox(Inches(0.8), Inches(7.0), Inches(11.733), Inches(0.3))
-        tf = foot_box.text_frame
-        p = tf.paragraphs[0]
-        p.text = f"CodeMedic AI  |  Hackathon Submission Presentation  •  Slide {current_slide} of {total_slides}"
-        p.font.name = FONT_BODY
-        p.font.size = Pt(9)
-        p.font.color.rgb = TEXT_DIM
-
-    # -------------------------------------------------------------
-    # SLIDE 1: TITLE SLIDE
-    # -------------------------------------------------------------
+    # ==========================================
+    # SLIDE 1: Hero Cover
+    # ==========================================
     slide1 = prs.slides.add_slide(blank_layout)
     set_bg(slide1)
+    add_anim_badge(slide1, "Hero Fade & Gradient Glow")
 
-    # Hero Card Container (Right Side Graphic Card)
-    hero_card = add_card(slide1, Inches(6.8), Inches(1.0), Inches(5.8), Inches(5.5), bg_color=CARD_BG, border_color=PRIMARY_BLUE)
+    # Main Hero Glass Card
+    hero_card = add_glass_card(slide1, Inches(0.8), Inches(1.0), Inches(11.733), Inches(5.6), bg_color=CARD_BG, border_color=BORDER_GLOW)
+    
+    # Left decorative accent bar
+    accent_bar = slide1.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(0.8), Inches(1.0), Inches(0.2), Inches(5.6))
+    accent_bar.fill.solid()
+    accent_bar.fill.fore_color.rgb = PRIMARY_BLUE
+    accent_bar.line.fill.background()
 
-    # Left Column Details
-    # Hackathon Tag Badge
-    badge = slide1.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.8), Inches(1.2), Inches(3.6), Inches(0.4))
+    # Track Badge
+    badge = slide1.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(1.3), Inches(1.4), Inches(4.7), Inches(0.42))
     badge.fill.solid()
-    badge.fill.fore_color.rgb = RGBColor(17, 24, 39)
-    badge.line.color.rgb = CYAN
+    badge.fill.fore_color.rgb = CARD_BG_ALT
+    badge.line.color.rgb = BORDER_CYAN
     badge.line.width = Pt(1)
     tf = badge.text_frame
     p = tf.paragraphs[0]
-    p.text = "⚡ HACKATHON SUBMISSION  •  AI & DEV TOOLS"
+    p.text = "OPENAI CODEX HACKATHON 2026 • TRACK: AGENTIC CODING"
     p.font.name = FONT_TITLE
     p.font.size = Pt(9.5)
     p.font.bold = True
     p.font.color.rgb = CYAN
-    p.alignment = PP_ALIGN.CENTER
 
-    # Project Title
-    tbox = slide1.shapes.add_textbox(Inches(0.78), Inches(1.8), Inches(5.8), Inches(1.2))
-    tf = tbox.text_frame
+    # Main Title
+    t_box = slide1.shapes.add_textbox(Inches(1.3), Inches(2.0), Inches(7.5), Inches(1.1))
+    tf = t_box.text_frame
+    tf.word_wrap = True
     p = tf.paragraphs[0]
     p.text = "CodeMedic AI"
     p.font.name = FONT_TITLE
-    p.font.size = Pt(48)
-    p.font.bold = True
-    p.font.color.rgb = TEXT_WHITE
-
-    # Tagline
-    tagbox = slide1.shapes.add_textbox(Inches(0.78), Inches(3.0), Inches(5.8), Inches(0.6))
-    tf = tagbox.text_frame
-    p = tf.paragraphs[0]
-    p.text = "Fix. Explain. Optimize. Powered by AI."
-    p.font.name = FONT_TITLE
-    p.font.size = Pt(20)
+    p.font.size = Pt(46)
     p.font.bold = True
     p.font.color.rgb = SKY_BLUE
 
-    # Subtitle Description
-    descbox = slide1.shapes.add_textbox(Inches(0.78), Inches(3.6), Inches(5.6), Inches(1.2))
-    tf = descbox.text_frame
+    # Tagline
+    tag_box = slide1.shapes.add_textbox(Inches(1.3), Inches(3.1), Inches(7.5), Inches(0.6))
+    tf = tag_box.text_frame
+    p = tf.paragraphs[0]
+    p.text = "Fix. Explain. Optimize."
+    p.font.name = FONT_TITLE
+    p.font.size = Pt(24)
+    p.font.bold = True
+    p.font.color.rgb = TEXT_WHITE
+
+    # Powered By
+    p_box = slide1.shapes.add_textbox(Inches(1.3), Inches(3.7), Inches(7.5), Inches(0.5))
+    tf = p_box.text_frame
+    p = tf.paragraphs[0]
+    p.text = "⚡ Powered by OpenAI Codex"
+    p.font.name = FONT_BODY
+    p.font.size = Pt(16)
+    p.font.bold = True
+    p.font.color.rgb = PURPLE
+
+    # Description Paragraph
+    desc_box = slide1.shapes.add_textbox(Inches(1.3), Inches(4.3), Inches(7.0), Inches(1.1))
+    tf = desc_box.text_frame
     tf.word_wrap = True
     p = tf.paragraphs[0]
-    p.text = "The AI-Powered Senior Software Engineer assistant that analyzes, debugs, secures, explains, and refactors developer code in real-time."
+    p.text = "An autonomous multi-agent AI assistant that revolutionizes software engineering by combining real-time bug detection, security scanning, performance optimization, and automated test & doc generation into a unified workflow."
     p.font.name = FONT_BODY
-    p.font.size = Pt(14)
+    p.font.size = Pt(12)
     p.font.color.rgb = TEXT_MUTED
 
-    # Highlights Pills
-    pill_data = [
-        ("🔍 Bug Detection", PRIMARY_BLUE),
-        ("🛡️ Security Audit", PURPLE),
-        ("🚀 Performance Fix", CYAN),
-        ("🧪 Test Auto-Gen", GREEN)
-    ]
-    px = 0.8
-    py = 5.0
-    for text, color in pill_data:
-        pbox = slide1.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(px), Inches(py), Inches(2.6), Inches(0.45))
-        pbox.fill.solid()
-        pbox.fill.fore_color.rgb = CARD_BG
-        pbox.line.color.rgb = color
-        pbox.line.width = Pt(1)
-        tf = pbox.text_frame
-        p = tf.paragraphs[0]
-        p.text = text
-        p.font.name = FONT_BODY
-        p.font.size = Pt(11)
-        p.font.bold = True
-        p.font.color.rgb = TEXT_WHITE
-        p.alignment = PP_ALIGN.CENTER
-        px += 2.8
-        if px > 5.0:
-            px = 0.8
-            py += 0.65
-
-    # Right Hero Card Contents (Code Editor Preview Graphic)
-    # Window header bar
-    hbar = slide1.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(6.8), Inches(1.0), Inches(5.8), Inches(0.5))
-    hbar.fill.solid()
-    hbar.fill.fore_color.rgb = RGBColor(15, 23, 42)
-    hbar.line.fill.background()
-    # Red/Yellow/Green dots
-    dots_x = 7.0
-    for color in [RED, AMBER, GREEN]:
-        dot = slide1.shapes.add_shape(MSO_SHAPE.OVAL, Inches(dots_x), Inches(1.15), Inches(0.18), Inches(0.18))
-        dot.fill.solid()
-        dot.fill.fore_color.rgb = color
-        dot.line.fill.background()
-        dots_x += 0.28
+    # Developer Info Card (Right Side)
+    dev_card = add_glass_card(slide1, Inches(8.7), Inches(1.8), Inches(3.4), Inches(4.0), bg_color=CARD_BG_ALT, border_color=BORDER_PURPLE)
+    dev_tf = dev_card.text_frame
+    dev_tf.word_wrap = True
     
-    # Title on bar
-    htitle = slide1.shapes.add_textbox(Inches(8.0), Inches(1.05), Inches(4.0), Inches(0.4))
-    tf = htitle.text_frame
-    p = tf.paragraphs[0]
-    p.text = "codemedic_assistant.py — AI Senior Engineer"
-    p.font.name = FONT_BODY
-    p.font.size = Pt(10)
-    p.font.color.rgb = TEXT_MUTED
+    p = dev_tf.paragraphs[0]
+    p.text = "DEVELOPER"
+    p.font.name = FONT_TITLE
+    p.font.size = Pt(10.5)
+    p.font.bold = True
+    p.font.color.rgb = PURPLE
+    
+    p2 = dev_tf.add_paragraph()
+    p2.text = "Umer Khan"
+    p2.font.name = FONT_TITLE
+    p2.font.size = Pt(20)
+    p2.font.bold = True
+    p2.font.color.rgb = TEXT_WHITE
+    
+    p3 = dev_tf.add_paragraph()
+    p3.text = "B.E. Artificial Intelligence & Data Science"
+    p3.font.name = FONT_BODY
+    p3.font.size = Pt(11)
+    p3.font.color.rgb = TEXT_MUTED
 
-    # Hero Code Graphic Text
-    code_text_box = slide1.shapes.add_textbox(Inches(7.0), Inches(1.6), Inches(5.4), Inches(4.7))
-    tf = code_text_box.text_frame
-    tf.word_wrap = True
+    p4 = dev_tf.add_paragraph()
+    p4.text = "\nEVENT & TRACK"
+    p4.font.name = FONT_TITLE
+    p4.font.size = Pt(10.5)
+    p4.font.bold = True
+    p4.font.color.rgb = PURPLE
 
-    lines = [
-        ("class CodeMedicEngine:", SKY_BLUE, True),
-        ("    def analyze_repository(self, code_base):", TEXT_WHITE, False),
-        ("        # Step 1: Detect Vulnerabilities", TEXT_DIM, False),
-        ("        vulns = self.security_scanner.scan(code_base)", RED, False),
-        ("        # Step 2: Auto-Fix & Optimize O(N) Complexity", TEXT_DIM, False),
-        ("        fixed_code = self.ai_engine.refactor(code_base)", GREEN, False),
-        ("        # Step 3: Auto-Generate Unit Tests", TEXT_DIM, False),
-        ("        tests = self.test_gen.create_suite(fixed_code)", PURPLE, False),
-        ("        return DiagnosticReport(status='HEALTHY', score=99.8)", CYAN, True)
-    ]
-    for line, color, bold in lines:
-        p = tf.add_paragraph()
-        p.text = line
-        p.font.name = "Consolas"
-        p.font.size = Pt(10.5)
-        p.font.color.rgb = color
-        p.font.bold = bold
+    p5 = dev_tf.add_paragraph()
+    p5.text = "OpenAI Codex Hackathon 2026\nTrack: Agentic Coding"
+    p5.font.name = FONT_BODY
+    p5.font.size = Pt(11.5)
+    p5.font.bold = True
+    p5.font.color.rgb = CYAN
 
-    add_anim_badge(slide1, "Hero Slide Glow & Code Typewriter")
-    add_footer(slide1, 1)
-
-    # -------------------------------------------------------------
-    # SLIDE 2: PROBLEM STATEMENT
-    # -------------------------------------------------------------
+    # ==========================================
+    # SLIDE 2: Problem Statement
+    # ==========================================
     slide2 = prs.slides.add_slide(blank_layout)
     set_bg(slide2)
-    add_header(slide2, "THE REAL WORLD PROBLEM", "Software Engineering Bottlenecks & Friction", "Modern developers face overwhelming friction across debugging, security reviews, and maintenance.")
-    add_anim_badge(slide2, "Staggered Stat Cards Drop-in")
+    add_header(slide2, "PROBLEM STATEMENT", "Current Challenges in Software Engineering", "Software developers face severe productivity bottlenecks with fragmented manual tools.")
+    add_anim_badge(slide2, "Staggered Card Entrance & Icon Pop")
 
     problems = [
-        ("55%", "Debugging Time Loss", "Developers spend over half their working hours stepping through call stacks, tracking down elusive bugs, and understanding undocumented legacy code bases.", RED),
-        ("78%", "Overlooked Vulns", "Security vulnerabilities bypass manual code reviews due to tight release deadlines and lack of dedicated security expertise in sprint teams.", AMBER),
-        ("2-3 Days", "Code Review Stalls", "Pull requests sit idle waiting for senior team members to review logic, resulting in deployment latency and lost engineering momentum.", PRIMARY_BLUE),
-        ("40%", "Technical Debt", "Inadequate unit test coverage and missing documentation compound code rot over time, making future refactoring high-risk.", PURPLE)
+        ("⏱️", "Time Consuming Debugging", "Manual bug hunting and root-cause analysis consume up to 50% of active development cycles."),
+        ("🔄", "Context Switching", "Juggling static analysis tools, review platforms, and documentation causes severe focus loss."),
+        ("🛡️", "Security Risks", "Critical security vulnerabilities remain undetected until staging or production releases."),
+        ("📚", "Manual Documentation", "Code explanations and documentation are frequently incomplete, outdated, or missing entirely."),
+        ("⏳", "Delayed Reviews", "Heavy reliance on senior developers for code reviews creates release schedule bottlenecks."),
+        ("⚡", "Performance Bottlenecks", "Algorithmic inefficiencies and memory bottlenecks are hard to spot without deep profiling."),
+        ("📉", "Productivity Loss", "Repetitive manual engineering overhead directly slows down feature delivery cycles.")
     ]
 
-    cx, cy = 0.8, 1.9
-    for stat, title, desc, accent in problems:
-        card = add_card(slide2, Inches(cx), Inches(cy), Inches(5.6), Inches(2.3), bg_color=CARD_BG, border_color=accent)
-        
-        # Stat Number Callout
-        st_box = slide2.shapes.add_textbox(Inches(cx + 0.2), Inches(cy + 0.15), Inches(5.2), Inches(0.8))
-        tf = st_box.text_frame
-        p = tf.paragraphs[0]
-        p.text = stat
-        p.font.name = FONT_TITLE
-        p.font.size = Pt(36)
-        p.font.bold = True
-        p.font.color.rgb = accent
+    card_w = Inches(2.75)
+    card_h = Inches(2.2)
+    gap_x = Inches(0.2)
+    start_y = Inches(1.9)
 
-        # Stat Title
-        t_box = slide2.shapes.add_textbox(Inches(cx + 0.2), Inches(cy + 0.85), Inches(5.2), Inches(0.4))
-        tf = t_box.text_frame
+    for i, (icon, title, desc) in enumerate(problems[:4]):
+        left = Inches(0.8) + i * (card_w + gap_x)
+        card = add_glass_card(slide2, left, start_y, card_w, card_h, bg_color=CARD_BG, border_color=BORDER_GLOW)
+        tf = card.text_frame
+        tf.word_wrap = True
+        tf.margin_left = tf.margin_top = tf.margin_right = tf.margin_bottom = Inches(0.15)
+        
         p = tf.paragraphs[0]
-        p.text = title
+        p.text = f"{icon}  {title}"
         p.font.name = FONT_TITLE
-        p.font.size = Pt(16)
+        p.font.size = Pt(13)
         p.font.bold = True
         p.font.color.rgb = TEXT_WHITE
+        
+        p2 = tf.add_paragraph()
+        p2.text = f"\n{desc}"
+        p2.font.name = FONT_BODY
+        p2.font.size = Pt(10.5)
+        p2.font.color.rgb = TEXT_MUTED
 
-        # Stat Description
-        d_box = slide2.shapes.add_textbox(Inches(cx + 0.2), Inches(cy + 1.25), Inches(5.2), Inches(0.95))
-        tf = d_box.text_frame
+    start_y2 = Inches(4.3)
+    for i, (icon, title, desc) in enumerate(problems[4:]):
+        left = Inches(0.8) + i * (card_w + gap_x)
+        card = add_glass_card(slide2, left, start_y2, card_w, card_h, bg_color=CARD_BG, border_color=BORDER_PURPLE)
+        tf = card.text_frame
         tf.word_wrap = True
+        tf.margin_left = tf.margin_top = tf.margin_right = tf.margin_bottom = Inches(0.15)
+        
         p = tf.paragraphs[0]
-        p.text = desc
-        p.font.name = FONT_BODY
-        p.font.size = Pt(11)
-        p.font.color.rgb = TEXT_MUTED
+        p.text = f"{icon}  {title}"
+        p.font.name = FONT_TITLE
+        p.font.size = Pt(13)
+        p.font.bold = True
+        p.font.color.rgb = TEXT_WHITE
+        
+        p2 = tf.add_paragraph()
+        p2.text = f"\n{desc}"
+        p2.font.name = FONT_BODY
+        p2.font.size = Pt(10.5)
+        p2.font.color.rgb = TEXT_MUTED
 
-        cx += 6.0
-        if cx > 7.0:
-            cx = 0.8
-            cy += 2.5
+    # Highlight Summary Card (Last column bottom)
+    sum_left = Inches(0.8) + 3 * (card_w + gap_x)
+    sum_card = add_glass_card(slide2, sum_left, start_y2, card_w, card_h, bg_color=CARD_BG_ALT, border_color=CYAN)
+    stf = sum_card.text_frame
+    stf.word_wrap = True
+    stf.margin_left = stf.margin_top = stf.margin_right = stf.margin_bottom = Inches(0.15)
+    p = stf.paragraphs[0]
+    p.text = "🎯 CORE IMPACT"
+    p.font.name = FONT_TITLE
+    p.font.size = Pt(11.5)
+    p.font.bold = True
+    p.font.color.rgb = CYAN
+    p2 = stf.add_paragraph()
+    p2.text = "\nConventional development flows depend on fragmented, manual tools—resulting in high bug leakage and slow delivery."
+    p2.font.name = FONT_BODY
+    p2.font.size = Pt(10.5)
+    p2.font.bold = True
+    p2.font.color.rgb = TEXT_WHITE
 
-    add_footer(slide2, 2)
-
-    # -------------------------------------------------------------
-    # SLIDE 3: SOLUTION
-    # -------------------------------------------------------------
+    # ==========================================
+    # SLIDE 3: Existing Workflow
+    # ==========================================
     slide3 = prs.slides.add_slide(blank_layout)
     set_bg(slide3)
-    add_header(slide3, "THE SOLUTION", "Introducing CodeMedic AI", "CodeMedic AI transforms developer workflows by acting as an intelligent Senior Engineer co-pilot.")
-    add_anim_badge(slide3, "Horizontal Phase Build")
+    add_header(slide3, "EXISTING WORKFLOW", "Fragmented & Manual Development Process", "The traditional workflow relies on disconnected tools and slow manual review cycles.")
+    add_anim_badge(slide3, "Sequential Workflow Step Highlight")
 
-    pillars = [
-        ("1. INGESTION", "Seamless Code Capture", "Upload entire source files or paste code directly into the built-in Monaco Code Editor with multi-language support.", PRIMARY_BLUE),
-        ("2. AI COGNITION", "Senior Engineer Analysis", "Multi-layered LLM evaluation scans for syntax bugs, security flaws, O(N) complexity, and missing tests.", CYAN),
-        ("3. ACTIONABLE OUTPUT", "One-Click Resolution", "Receive refactored code, instant security patches, comprehensive documentation, and downloadable PDF reports.", GREEN)
+    # Add PDF Image 2
+    img2_path = os.path.join(MEDIA_DIR, "image2.png")
+    if os.path.exists(img2_path):
+        slide3.shapes.add_picture(img2_path, Inches(0.8), Inches(1.9), width=Inches(7.2))
+
+    # Right side 7-step callout card
+    right_card = add_glass_card(slide3, Inches(8.3), Inches(1.9), Inches(4.2), Inches(5.1), bg_color=CARD_BG, border_color=BORDER_GLOW)
+    rtf = right_card.text_frame
+    rtf.word_wrap = True
+    rtf.margin_left = rtf.margin_top = rtf.margin_right = rtf.margin_bottom = Inches(0.2)
+
+    p = rtf.paragraphs[0]
+    p.text = "TRADITIONAL WORKFLOW STEPS"
+    p.font.name = FONT_TITLE
+    p.font.size = Pt(11.5)
+    p.font.bold = True
+    p.font.color.rgb = SKY_BLUE
+
+    steps = [
+        "1. Write & Compile Code: Manual development in IDE.",
+        "2. Manual Debugging: Line-by-line problem hunting.",
+        "3. Web Search: Searching documentation for solutions.",
+        "4. Code Review: Waiting for senior dev review feedback.",
+        "5. Security & Perf: Running separate compliance scanners.",
+        "6. Manual Tests & Docs: Writing boilerplate unit tests.",
+        "7. Final Deployment: High risk of undetected bugs."
     ]
 
-    px = 0.8
-    for p_title, p_head, p_desc, p_accent in pillars:
-        card = add_card(slide3, Inches(px), Inches(1.9), Inches(3.7), Inches(4.8), bg_color=CARD_BG, border_color=p_accent)
-        
-        # Step Badge
-        sbox = slide3.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(px + 0.3), Inches(2.2), Inches(2.2), Inches(0.35))
-        sbox.fill.solid()
-        sbox.fill.fore_color.rgb = RGBColor(15, 23, 42)
-        sbox.line.color.rgb = p_accent
-        sbox.line.width = Pt(1)
-        tf = sbox.text_frame
-        p = tf.paragraphs[0]
-        p.text = p_title
-        p.font.name = FONT_TITLE
-        p.font.size = Pt(10)
-        p.font.bold = True
-        p.font.color.rgb = p_accent
-        p.alignment = PP_ALIGN.CENTER
+    for step in steps:
+        p_step = rtf.add_paragraph()
+        p_step.text = f"• {step}"
+        p_step.font.name = FONT_BODY
+        p_step.font.size = Pt(10.5)
+        p_step.font.color.rgb = TEXT_MUTED
 
-        # Head
-        th = slide3.shapes.add_textbox(Inches(px + 0.3), Inches(2.7), Inches(3.1), Inches(0.8))
-        tf = th.text_frame
-        tf.word_wrap = True
-        p = tf.paragraphs[0]
-        p.text = p_head
-        p.font.name = FONT_TITLE
-        p.font.size = Pt(18)
-        p.font.bold = True
-        p.font.color.rgb = TEXT_WHITE
+    # Bottom summary callout
+    p_sum = rtf.add_paragraph()
+    p_sum.text = "\n⚠️ Limitation: High context switching, long feedback loops, and delayed releases."
+    p_sum.font.name = FONT_BODY
+    p_sum.font.size = Pt(10.5)
+    p_sum.font.bold = True
+    p_sum.font.color.rgb = RED
 
-        # Desc
-        td = slide3.shapes.add_textbox(Inches(px + 0.3), Inches(3.6), Inches(3.1), Inches(2.8))
-        tf = td.text_frame
-        tf.word_wrap = True
-        p = tf.paragraphs[0]
-        p.text = p_desc
-        p.font.name = FONT_BODY
-        p.font.size = Pt(12)
-        p.font.color.rgb = TEXT_MUTED
-
-        px += 4.0
-
-    add_footer(slide3, 3)
-
-    # -------------------------------------------------------------
-    # SLIDE 4: ARCHITECTURE
-    # -------------------------------------------------------------
+    # ==========================================
+    # SLIDE 4: Existing Solutions & Limitations
+    # ==========================================
     slide4 = prs.slides.add_slide(blank_layout)
     set_bg(slide4)
-    add_header(slide4, "SYSTEM ARCHITECTURE", "High-Performance Modular AI Engine Pipeline", "End-to-end decoupled system architecture optimized for low-latency code processing.")
-    add_anim_badge(slide4, "Data Flow Pulse Animation")
+    add_header(slide4, "SOLUTION LIMITATIONS", "Existing Solutions & Their Key Limitations", "Traditional tools offer rigid static rules or generic chatbot responses without structured context.")
+    add_anim_badge(slide4, "Morph & Limitation Card Slide-In")
 
-    arch_blocks = [
-        ("USER", "Developer / Client", "Web Dashboard\nMonaco Editor", PRIMARY_BLUE),
-        ("FRONTEND", "React 18 + Vite", "Tailwind CSS\nState Management", SKY_BLUE),
-        ("BACKEND", "FastAPI Server", "Async Processing\nREST & JSON API", CYAN),
-        ("AI ENGINE", "Multi-Agent LLM", "Prompt Pipelines\nAST Parser", PURPLE),
-        ("REPORTS", "Output Engine", "Refactored Code\nPDF / JSON Export", GREEN)
+    tools = [
+        ("ESLint / Linters", "Rule-Based Only", "Strictly checks static syntax rules without reasoning about complex programming logic, context, or design flaws.", RED),
+        ("SonarQube", "Limited Context", "Detects basic code smells but lacks deep AI reasoning to suggest intelligent, context-aware architectural fixes.", AMBER),
+        ("IDE Warnings", "Syntax-Focused", "Flags immediate syntax errors and missing imports, but fails to identify security risks or performance bottlenecks.", AMBER),
+        ("Generic AI Chatbots", "Unstructured Output", "Requires manual prompt engineering, lacks multi-file context, and does not provide unified technical engineering reports.", RED),
+        ("Manual Review", "Slow & Inconsistent", "Highly dependent on senior developer bandwidth, causing release delays, reviewer fatigue, and human error.", RED)
     ]
 
-    ax = 0.8
-    for name, sub, tech, accent in arch_blocks:
-        card = add_card(slide4, Inches(ax), Inches(2.4), Inches(2.1), Inches(3.8), bg_color=CARD_BG, border_color=accent)
-        
-        # Block Header
-        bh = slide4.shapes.add_textbox(Inches(ax + 0.1), Inches(2.6), Inches(1.9), Inches(0.4))
-        tf = bh.text_frame
+    c_w = Inches(2.2)
+    c_h = Inches(4.8)
+    gap = Inches(0.18)
+
+    for i, (name, tag, limit, color) in enumerate(tools):
+        left = Inches(0.8) + i * (c_w + gap)
+        card = add_glass_card(slide4, left, Inches(1.9), c_w, c_h, bg_color=CARD_BG, border_color=BORDER_GLOW)
+        tf = card.text_frame
+        tf.word_wrap = True
+        tf.margin_left = tf.margin_top = tf.margin_right = tf.margin_bottom = Inches(0.15)
+
         p = tf.paragraphs[0]
         p.text = name
         p.font.name = FONT_TITLE
-        p.font.size = Pt(14)
-        p.font.bold = True
-        p.font.color.rgb = accent
-        p.alignment = PP_ALIGN.CENTER
-
-        # Subtitle
-        bs = slide4.shapes.add_textbox(Inches(ax + 0.1), Inches(3.1), Inches(1.9), Inches(0.6))
-        tf = bs.text_frame
-        tf.word_wrap = True
-        p = tf.paragraphs[0]
-        p.text = sub
-        p.font.name = FONT_TITLE
-        p.font.size = Pt(12)
+        p.font.size = Pt(13.5)
         p.font.bold = True
         p.font.color.rgb = TEXT_WHITE
-        p.alignment = PP_ALIGN.CENTER
 
-        # Tech Details
-        bt = slide4.shapes.add_textbox(Inches(ax + 0.1), Inches(3.8), Inches(1.9), Inches(2.0))
-        tf = bt.text_frame
-        tf.word_wrap = True
-        p = tf.paragraphs[0]
-        p.text = tech
-        p.font.name = FONT_BODY
-        p.font.size = Pt(10.5)
-        p.font.color.rgb = TEXT_MUTED
-        p.alignment = PP_ALIGN.CENTER
+        # Badge
+        p_b = tf.add_paragraph()
+        p_b.text = f"\n[{tag.upper()}]"
+        p_b.font.name = FONT_TITLE
+        p_b.font.size = Pt(9.5)
+        p_b.font.bold = True
+        p_b.font.color.rgb = color
 
-        # Draw Connector Arrow if not last
-        if ax < 9.0:
-            arrow = slide4.shapes.add_shape(MSO_SHAPE.RIGHT_ARROW, Inches(ax + 2.15), Inches(4.1), Inches(0.2), Inches(0.3))
-            arrow.fill.solid()
-            arrow.fill.fore_color.rgb = SKY_BLUE
-            arrow.line.fill.background()
+        p_desc = tf.add_paragraph()
+        p_desc.text = f"\n{limit}"
+        p_desc.font.name = FONT_BODY
+        p_desc.font.size = Pt(10.5)
+        p_desc.font.color.rgb = TEXT_MUTED
 
-        ax += 2.4
+    # Bottom summary box
+    b_box = add_glass_card(slide4, Inches(0.8), Inches(6.85), Inches(11.733), Inches(0.45), bg_color=CARD_BG_ALT, border_color=CYAN)
+    btf = b_box.text_frame
+    p = btf.paragraphs[0]
+    p.text = "💡 CodeMedic AI Bridge: Replaces fragmented tools with an autonomous, multi-agent AI engine that provides end-to-end code analysis."
+    p.font.name = FONT_BODY
+    p.font.size = Pt(11)
+    p.font.bold = True
+    p.font.color.rgb = CYAN
+    p.alignment = PP_ALIGN.CENTER
 
-    add_footer(slide4, 4)
-
-    # -------------------------------------------------------------
-    # SLIDE 5: WORKFLOW
-    # -------------------------------------------------------------
+    # ==========================================
+    # SLIDE 5: Our Solution
+    # ==========================================
     slide5 = prs.slides.add_slide(blank_layout)
     set_bg(slide5)
-    add_header(slide5, "EXECTION WORKFLOW", "6-Stage Automated Code Enhancement Pipeline", "From raw source code input to verified production-grade delivery.")
-    add_anim_badge(slide5, "Sequential Flow Highlight")
+    add_header(slide5, "PROPOSED SOLUTION", "CodeMedic AI — Agentic AI Engineering Assistant", "An intelligent multi-agent platform that automates code analysis, security, optimization, and testing.")
+    add_anim_badge(slide5, "Agent Flow Pulse & Callout Reveal")
 
-    steps = [
-        ("Step 01", "Paste Code", "Input code via Monaco Editor or file upload.", PRIMARY_BLUE),
-        ("Step 02", "AI Processing", "Tokenization, AST parsing & prompt dispatch.", SKY_BLUE),
-        ("Step 03", "Bug Detection", "Static analysis & logic error detection.", RED),
-        ("Step 04", "Security Scan", "OWASP top 10 & secret vulnerability check.", AMBER),
-        ("Step 05", "Optimization", "Refactoring complexity O(N^2) to O(1).", GREEN),
-        ("Step 06", "Download", "Export complete PDF report & test suite.", PURPLE)
+    # Add PDF Image 3
+    img3_path = os.path.join(MEDIA_DIR, "image3.png")
+    if os.path.exists(img3_path):
+        slide5.shapes.add_picture(img3_path, Inches(0.8), Inches(1.9), width=Inches(7.2))
+
+    # Right side 5 Pillars Card
+    sol_card = add_glass_card(slide5, Inches(8.3), Inches(1.9), Inches(4.2), Inches(5.1), bg_color=CARD_BG, border_color=BORDER_PURPLE)
+    stf = sol_card.text_frame
+    stf.word_wrap = True
+    stf.margin_left = stf.margin_top = stf.margin_right = stf.margin_bottom = Inches(0.2)
+
+    p = stf.paragraphs[0]
+    p.text = "WORKFLOW & KEY PILLARS"
+    p.font.name = FONT_TITLE
+    p.font.size = Pt(11.5)
+    p.font.bold = True
+    p.font.color.rgb = PURPLE
+
+    flow_p = stf.add_paragraph()
+    flow_p.text = "Developer ➔ Upload Code ➔ Agentic AI Engine ➔ Smart Dashboard\n"
+    flow_p.font.name = FONT_BODY
+    flow_p.font.size = Pt(10.5)
+    flow_p.font.bold = True
+    flow_p.font.color.rgb = CYAN
+
+    pillars = [
+        ("🐛 Bug Detection", "Identifies syntax, logical, and runtime edge cases."),
+        ("🛡️ Security Vulnerabilities", "Scans for SQLi, secrets, and OWASP risks."),
+        ("⚡ Performance Optimization", "Evaluates complexity and memory bottlenecks."),
+        ("📚 AI Documentation", "Generates instant code explanations & comments."),
+        ("🧪 Unit Test Generation", "Creates complete test suites automatically.")
     ]
 
-    sx = 0.8
-    sy = 2.2
-    for step_num, title, desc, accent in steps:
-        card = add_card(slide5, Inches(sx), Inches(sy), Inches(3.6), Inches(2.0), bg_color=CARD_BG, border_color=accent)
-        
-        # Step Number Pill
-        sp = slide5.shapes.add_textbox(Inches(sx + 0.15), Inches(sy + 0.15), Inches(3.3), Inches(0.4))
-        tf = sp.text_frame
-        p = tf.paragraphs[0]
-        p.text = step_num.upper()
-        p.font.name = FONT_TITLE
-        p.font.size = Pt(11)
-        p.font.bold = True
-        p.font.color.rgb = accent
+    for title, desc in pillars:
+        p_pil = stf.add_paragraph()
+        p_pil.text = f"• {title}: {desc}"
+        p_pil.font.name = FONT_BODY
+        p_pil.font.size = Pt(10)
+        p_pil.font.color.rgb = TEXT_WHITE
 
-        # Step Title
-        st = slide5.shapes.add_textbox(Inches(sx + 0.15), Inches(sy + 0.55), Inches(3.3), Inches(0.4))
-        tf = st.text_frame
+    # ==========================================
+    # SLIDE 6: Hackathon Track Alignment
+    # ==========================================
+    slide6 = prs.slides.add_slide(blank_layout)
+    set_bg(slide6)
+    add_header(slide6, "HACKATHON TRACK ALIGNMENT", "Agentic Coding — Perfect Alignment", "Demonstrating how autonomous AI agents collaborate to solve complex engineering challenges.")
+    add_anim_badge(slide6, "Multi-Agent Network Graph Expansion")
+
+    # Top Architecture Banner
+    top_banner = add_glass_card(slide6, Inches(0.8), Inches(1.8), Inches(11.733), Inches(0.6), bg_color=CARD_BG_ALT, border_color=BORDER_PURPLE)
+    ttf = top_banner.text_frame
+    p = ttf.paragraphs[0]
+    p.text = "🤖 Orchestrator Agent   ➔   👥 Multiple Specialized AI Agents   ➔   📊 Unified Engineering Report"
+    p.font.name = FONT_TITLE
+    p.font.size = Pt(13)
+    p.font.bold = True
+    p.font.color.rgb = PURPLE
+    p.alignment = PP_ALIGN.CENTER
+
+    # 6 Pillar Alignment Cards (3x2 Grid)
+    align_items = [
+        ("🤖 Autonomous Code Analysis", "AI agents independently inspect submitted code without requiring manual prompting or step-by-step guidance."),
+        ("🧩 Task Decomposition", "Complex software engineering tasks are automatically divided among specialized domain-specific agents."),
+        ("🤝 Multi-Agent Collaboration", "Multiple AI agents work concurrently under Orchestrator guidance to analyze different software aspects."),
+        ("🧠 Intelligent Decision Making", "The system dynamically determines the best analysis strategy based on uploaded code structure and language."),
+        ("📊 Structured Engineering Reports", "Outputs from all agents are synthesized into a single, comprehensive, actionable developer report."),
+        ("🚀 Developer Productivity", "Automates repetitive tasks—debugging, security, performance, docs, and testing—accelerating development velocity.")
+    ]
+
+    cw = Inches(3.75)
+    ch = Inches(2.1)
+    gx = Inches(0.24)
+    gy = Inches(0.25)
+
+    for i, (title, desc) in enumerate(align_items):
+        row = i // 3
+        col = i % 3
+        left = Inches(0.8) + col * (cw + gx)
+        top = Inches(2.65) + row * (ch + gy)
+
+        card = add_glass_card(slide6, left, top, cw, ch, bg_color=CARD_BG, border_color=BORDER_GLOW)
+        tf = card.text_frame
+        tf.word_wrap = True
+        tf.margin_left = tf.margin_top = tf.margin_right = tf.margin_bottom = Inches(0.15)
+
         p = tf.paragraphs[0]
         p.text = title
         p.font.name = FONT_TITLE
-        p.font.size = Pt(16)
+        p.font.size = Pt(12.5)
         p.font.bold = True
-        p.font.color.rgb = TEXT_WHITE
+        p.font.color.rgb = SKY_BLUE
 
-        # Step Desc
-        sd = slide5.shapes.add_textbox(Inches(sx + 0.15), Inches(sy + 0.95), Inches(3.3), Inches(0.95))
-        tf = sd.text_frame
-        tf.word_wrap = True
-        p = tf.paragraphs[0]
-        p.text = desc
-        p.font.name = FONT_BODY
-        p.font.size = Pt(11)
-        p.font.color.rgb = TEXT_MUTED
+        p_desc = tf.add_paragraph()
+        p_desc.text = f"\n{desc}"
+        p_desc.font.name = FONT_BODY
+        p_desc.font.size = Pt(10.5)
+        p_desc.font.color.rgb = TEXT_MUTED
 
-        sx += 3.9
-        if sx > 9.0:
-            sx = 0.8
-            sy += 2.3
-
-    add_footer(slide5, 5)
-
-    # -------------------------------------------------------------
-    # SLIDE 6: KEY FEATURES
-    # -------------------------------------------------------------
-    slide6 = prs.slides.add_slide(blank_layout)
-    set_bg(slide6)
-    add_header(slide6, "FEATURE SUITE", "8 Senior-Engineer Grade AI Capabilities", "Everything developers need to audit, optimize, explain, and test code in one dashboard.")
-    add_anim_badge(slide6, "Grid Zoom & Highlight")
-
-    features = [
-        ("🐛 AI Bug Detection", "Identifies syntax, logic, and runtime exceptions with exact line-number root cause explanations.", PRIMARY_BLUE),
-        ("🔍 Automated Code Review", "Provides senior dev feedback on code style, design patterns, maintainability, and clean code principles.", CYAN),
-        ("🛡️ Security Vulnerability Scanner", "Detects OWASP Top 10 risks, SQL injection, XSS, insecure dependencies, and hardcoded credentials.", RED),
-        ("🚀 Performance Optimizer", "Highlights memory leaks, redundant loops, and refactors inefficient logic into optimal O(1) structures.", GREEN),
-        ("📊 Complexity Analysis", "Calculates Cyclomatic complexity, Big-O time/space bounds, and code maintainability index scores.", AMBER),
-        ("🧪 Unit Test Generator", "Auto-generates robust, production-ready unit test suites for PyTest, Jest, and JUnit frameworks.", PURPLE),
-        ("📖 Documentation Generator", "Produces comprehensive JSDoc, PyDoc, and Markdown README files with clear parameter definitions.", SKY_BLUE),
-        ("📄 Executive PDF Reports", "Exports downloadable, client-ready code audit PDF summaries formatted for engineering managers.", GREEN)
-    ]
-
-    fx = 0.8
-    fy = 1.9
-    for f_title, f_desc, f_accent in features:
-        card = add_card(slide6, Inches(fx), Inches(fy), Inches(2.75), Inches(2.3), bg_color=CARD_BG, border_color=f_accent)
-        
-        # Title
-        ft = slide6.shapes.add_textbox(Inches(fx + 0.15), Inches(fy + 0.15), Inches(2.45), Inches(0.65))
-        tf = ft.text_frame
-        tf.word_wrap = True
-        p = tf.paragraphs[0]
-        p.text = f_title
-        p.font.name = FONT_TITLE
-        p.font.size = Pt(13)
-        p.font.bold = True
-        p.font.color.rgb = TEXT_WHITE
-
-        # Desc
-        fd = slide6.shapes.add_textbox(Inches(fx + 0.15), Inches(fy + 0.8), Inches(2.45), Inches(1.4))
-        tf = fd.text_frame
-        tf.word_wrap = True
-        p = tf.paragraphs[0]
-        p.text = f_desc
-        p.font.name = FONT_BODY
-        p.font.size = Pt(10)
-        p.font.color.rgb = TEXT_MUTED
-
-        fx += 2.95
-        if fx > 11.0:
-            fx = 0.8
-            fy += 2.45
-
-    add_footer(slide6, 6)
-
-    # -------------------------------------------------------------
-    # SLIDE 7: TECHNOLOGY STACK
-    # -------------------------------------------------------------
+    # ==========================================
+    # SLIDE 7: System Architecture
+    # ==========================================
     slide7 = prs.slides.add_slide(blank_layout)
     set_bg(slide7)
-    add_header(slide7, "TECHNOLOGY STACK", "Modern Tech Architecture", "Built using industry-standard enterprise frameworks for maximum performance.")
-    add_anim_badge(slide7, "Category Card Reveal")
+    add_header(slide7, "SYSTEM ARCHITECTURE", "End-to-End Multi-Agent Data Flow", "A modular multi-agent pipeline designed for high-performance code analysis.")
+    add_anim_badge(slide7, "Data Packet Animation Across Architecture")
 
-    stacks = [
-        ("FRONTEND", "React 18  •  Vite", "TypeScript  •  Tailwind CSS\nMonaco Code Editor  •  Lucide Icons", PRIMARY_BLUE),
-        ("BACKEND", "Python 3.11  •  FastAPI", "Uvicorn Async  •  Pydantic V2\nREST API Gateway  •  Gunicorn", CYAN),
-        ("AI ENGINE", "Gemini Pro  •  GPT-4o", "LangChain Agents  •  AST Parser\nCustom Engineering Prompts", PURPLE),
-        ("DATABASE & CACHE", "PostgreSQL  •  Redis", "SQLAlchemy ORM  •  Alembic\nSession Caching & Vector Storage", GREEN),
-        ("DEPLOYMENT & DEVOPS", "Docker  •  Vercel", "Render Cloud  •  GitHub Actions\nCI/CD Automated Testing Pipeline", AMBER)
+    # Add PDF Image 4
+    img4_path = os.path.join(MEDIA_DIR, "image4.png")
+    if os.path.exists(img4_path):
+        slide7.shapes.add_picture(img4_path, Inches(0.8), Inches(1.9), width=Inches(7.4))
+
+    # Right side Architecture Breakdown Cards
+    arch_card = add_glass_card(slide7, Inches(8.5), Inches(1.9), Inches(4.0), Inches(5.1), bg_color=CARD_BG, border_color=BORDER_GLOW)
+    atf = arch_card.text_frame
+    atf.word_wrap = True
+    atf.margin_left = atf.margin_top = atf.margin_right = atf.margin_bottom = Inches(0.18)
+
+    p = atf.paragraphs[0]
+    p.text = "ARCHITECTURE LAYERS"
+    p.font.name = FONT_TITLE
+    p.font.size = Pt(11.5)
+    p.font.bold = True
+    p.font.color.rgb = CYAN
+
+    layers = [
+        ("💻 Frontend Layer", "Next.js, TypeScript, Tailwind CSS, & Monaco Code Editor."),
+        ("⚙️ Backend API", "FastAPI (Python) REST API for high-speed code processing."),
+        ("🧠 Orchestrator Agent", "Parses code context and routes tasks to specialized agents."),
+        ("🤖 Specialized Agents", "Parallel Bug, Security, Perf, Review, Test, & Doc agents."),
+        ("📑 Synthesis Engine", "Aggregates multi-agent insights into a unified report schema."),
+        ("📊 Smart Dashboard", "Displays health scores, issues, & downloadable PDF/MD/JSON.")
     ]
 
-    tx = 0.8
-    for cat, main_tech, sub_tech, accent in stacks:
-        card = add_card(slide7, Inches(tx), Inches(2.1), Inches(2.18), Inches(4.5), bg_color=CARD_BG, border_color=accent)
-        
-        # Category Title
-        ct = slide7.shapes.add_textbox(Inches(tx + 0.1), Inches(2.3), Inches(1.98), Inches(0.4))
-        tf = ct.text_frame
-        p = tf.paragraphs[0]
-        p.text = cat
-        p.font.name = FONT_TITLE
-        p.font.size = Pt(11)
-        p.font.bold = True
-        p.font.color.rgb = accent
-        p.alignment = PP_ALIGN.CENTER
+    for title, desc in layers:
+        p_layer = atf.add_paragraph()
+        p_layer.text = f"\n• {title}\n  {desc}"
+        p_layer.font.name = FONT_BODY
+        p_layer.font.size = Pt(10)
+        p_layer.font.color.rgb = TEXT_WHITE
 
-        # Main Tech
-        mt = slide7.shapes.add_textbox(Inches(tx + 0.1), Inches(2.9), Inches(1.98), Inches(0.8))
-        tf = mt.text_frame
-        tf.word_wrap = True
-        p = tf.paragraphs[0]
-        p.text = main_tech
-        p.font.name = FONT_TITLE
-        p.font.size = Pt(14)
-        p.font.bold = True
-        p.font.color.rgb = TEXT_WHITE
-        p.alignment = PP_ALIGN.CENTER
-
-        # Divider line
-        div = slide7.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(tx + 0.3), Inches(3.8), Inches(1.58), Inches(0.02))
-        div.fill.solid()
-        div.fill.fore_color.rgb = accent
-        div.line.fill.background()
-
-        # Sub Tech
-        st = slide7.shapes.add_textbox(Inches(tx + 0.1), Inches(4.0), Inches(1.98), Inches(2.3))
-        tf = st.text_frame
-        tf.word_wrap = True
-        p = tf.paragraphs[0]
-        p.text = sub_tech
-        p.font.name = FONT_BODY
-        p.font.size = Pt(11)
-        p.font.color.rgb = TEXT_MUTED
-        p.alignment = PP_ALIGN.CENTER
-
-        tx += 2.38
-
-    add_footer(slide7, 7)
-
-    # -------------------------------------------------------------
-    # SLIDE 8: DEMO SCREENS
-    # -------------------------------------------------------------
+    # ==========================================
+    # SLIDE 8: User Workflow
+    # ==========================================
     slide8 = prs.slides.add_slide(blank_layout)
     set_bg(slide8)
-    add_header(slide8, "PRODUCT EXPERIENCE", "Interactive App Dashboard & Interface", "A sleek dark-mode user interface engineered for maximum developer productivity.")
-    add_anim_badge(slide8, "Mockup Carousel Slide")
+    add_header(slide8, "USER WORKFLOW", "9-Step Seamless Analysis & Optimization Flow", "From login to report export, CodeMedic AI delivers an intuitive, developer-centric workflow.")
+    add_anim_badge(slide8, "9-Step Sequential Flow Highlight")
 
-    screens = [
-        ("1. Landing Page", "Modern hero layout with code drop zone", PRIMARY_BLUE),
-        ("2. Monaco Editor", "Live syntax highlighting & diagnostic squigglies", CYAN),
-        ("3. AI Dashboard", "Real-time health score gauge & metric cards", GREEN),
-        ("4. Analysis Hub", "Categorized bugs, security & complexity tab views", PURPLE),
-        ("5. PDF Report Modal", "One-click audit export with formatted summaries", AMBER)
+    # Add PDF Image 5
+    img5_path = os.path.join(MEDIA_DIR, "image5.png")
+    if os.path.exists(img5_path):
+        slide8.shapes.add_picture(img5_path, Inches(0.8), Inches(1.9), width=Inches(7.2))
+
+    # Right side 9 Step Cards
+    step_card = add_glass_card(slide8, Inches(8.3), Inches(1.9), Inches(4.2), Inches(5.1), bg_color=CARD_BG, border_color=BORDER_PURPLE)
+    stf8 = step_card.text_frame
+    stf8.word_wrap = True
+    stf8.margin_left = stf8.margin_top = stf8.margin_right = stf8.margin_bottom = Inches(0.18)
+
+    p = stf8.paragraphs[0]
+    p.text = "EXECUTION WORKFLOW STEPS"
+    p.font.name = FONT_TITLE
+    p.font.size = Pt(11.5)
+    p.font.bold = True
+    p.font.color.rgb = PURPLE
+
+    workflow_steps = [
+        "1. Sign Up / Login: Access secure portal.",
+        "2. Upload/Paste Code: Input code in Monaco Editor.",
+        "3. AI Code Analysis: Orchestrator routes codebase.",
+        "4. Multi-Agent Processing: Parallel agent execution.",
+        "5. Results Aggregation: Synthesis Agent merges outputs.",
+        "6. Smart Dashboard: View code health score & risks.",
+        "7. Export Report: One-click PDF / MD / JSON export.",
+        "8. Improve Code: Apply recommended fixes.",
+        "9. Reanalyze: Perform continuous quality loop."
     ]
 
-    sx = 0.8
-    for s_name, s_sub, accent in screens:
-        # Mockup Frame Card
-        card = add_card(slide8, Inches(sx), Inches(2.1), Inches(2.18), Inches(4.5), bg_color=CARD_BG, border_color=accent)
-        
-        # Frame Top Bar
-        bar = slide8.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(sx), Inches(2.1), Inches(2.18), Inches(0.4))
-        bar.fill.solid()
-        bar.fill.fore_color.rgb = RGBColor(15, 23, 42)
-        bar.line.fill.background()
+    for s in workflow_steps:
+        ps = stf8.add_paragraph()
+        ps.text = f"• {s}"
+        ps.font.name = FONT_BODY
+        ps.font.size = Pt(9.8)
+        ps.font.color.rgb = TEXT_WHITE
 
-        # Dots
-        dot = slide8.shapes.add_shape(MSO_SHAPE.OVAL, Inches(sx + 0.15), Inches(2.2), Inches(0.12), Inches(0.12))
-        dot.fill.solid()
-        dot.fill.fore_color.rgb = RED
-        dot.line.fill.background()
-
-        # Title Inside Frame
-        st = slide8.shapes.add_textbox(Inches(sx + 0.1), Inches(2.7), Inches(1.98), Inches(0.8))
-        tf = st.text_frame
-        tf.word_wrap = True
-        p = tf.paragraphs[0]
-        p.text = s_name
-        p.font.name = FONT_TITLE
-        p.font.size = Pt(13)
-        p.font.bold = True
-        p.font.color.rgb = TEXT_WHITE
-        p.alignment = PP_ALIGN.CENTER
-
-        # Subtitle Inside Frame
-        sub = slide8.shapes.add_textbox(Inches(sx + 0.1), Inches(3.5), Inches(1.98), Inches(1.8))
-        tf = sub.text_frame
-        tf.word_wrap = True
-        p = tf.paragraphs[0]
-        p.text = s_sub
-        p.font.name = FONT_BODY
-        p.font.size = Pt(10.5)
-        p.font.color.rgb = TEXT_MUTED
-        p.alignment = PP_ALIGN.CENTER
-
-        # Placeholder Badge
-        ph = slide8.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(sx + 0.2), Inches(5.5), Inches(1.78), Inches(0.8))
-        ph.fill.solid()
-        ph.fill.fore_color.rgb = RGBColor(15, 23, 42)
-        ph.line.color.rgb = accent
-        ph.line.width = Pt(1)
-        tf = ph.text_frame
-        p = tf.paragraphs[0]
-        p.text = "[ Screenshot Placeholder ]"
-        p.font.name = FONT_BODY
-        p.font.size = Pt(8.5)
-        p.font.color.rgb = SKY_BLUE
-        p.alignment = PP_ALIGN.CENTER
-
-        sx += 2.38
-
-    add_footer(slide8, 8)
-
-    # -------------------------------------------------------------
-    # SLIDE 9: AI ANALYSIS DEEP DIVE
-    # -------------------------------------------------------------
+    # ==========================================
+    # SLIDE 9: Technical Stack
+    # ==========================================
     slide9 = prs.slides.add_slide(blank_layout)
     set_bg(slide9)
-    add_header(slide9, "AI ANALYSIS IN ACTION", "Side-by-Side Code Refactoring Comparison", "Watch CodeMedic AI instantly repair security vulnerabilities and optimize complexity.")
-    add_anim_badge(slide9, "Code Diff Comparison Wipe")
+    add_header(slide9, "TECHNICAL STACK", "Cutting-Edge Engineering & AI Ecosystem", "Built with modern frameworks, high-performance APIs, and OpenAI Codex.")
+    add_anim_badge(slide9, "Stack Category Zoom & Glow")
 
-    # Left Box: Original Code (Vulnerable)
-    card1 = add_card(slide9, Inches(0.8), Inches(2.0), Inches(5.6), Inches(4.6), bg_color=CARD_BG, border_color=RED)
-    
-    lbl1 = slide9.shapes.add_textbox(Inches(1.0), Inches(2.2), Inches(5.2), Inches(0.4))
-    tf = lbl1.text_frame
-    p = tf.paragraphs[0]
-    p.text = "❌ ORIGINAL CODE (Vulnerable & Unoptimized O(N^2))"
-    p.font.name = FONT_TITLE
-    p.font.size = Pt(12)
-    p.font.bold = True
-    p.font.color.rgb = RED
-
-    c1_box = slide9.shapes.add_textbox(Inches(1.0), Inches(2.6), Inches(5.2), Inches(3.8))
-    tf = c1_box.text_frame
-    tf.word_wrap = True
-    bad_code = [
-        ("def get_user_records(user_id):", TEXT_WHITE),
-        ("    # CRITICAL: SQL Injection vulnerability", RED),
-        ("    query = 'SELECT * FROM users WHERE id=' + user_id", RED),
-        ("    res = db.execute(query)", TEXT_WHITE),
-        ("    ", TEXT_WHITE),
-        ("    # CRITICAL: O(N^2) inefficient nested loop", AMBER),
-        ("    for i in range(len(res)):", AMBER),
-        ("        for j in range(len(res)):", AMBER),
-        ("            process_meta(res[i], res[j])", AMBER),
-        ("    return res", TEXT_WHITE)
+    stack_categories = [
+        ("🖥️ Frontend", "Next.js (React)\nTypeScript\nTailwind CSS\nshadcn/ui\nMonaco Editor\nLucide Icons"),
+        ("⚙️ Backend", "FastAPI (Python)\nPython 3.12 Core\nREST API Services\nAsyncIO Processing\nPydantic Schemas"),
+        ("🗄️ Database & Auth", "PostgreSQL\nSupabase Storage\nJWT Authentication\nSecure Session Tokens"),
+        ("🧠 AI & LLM Engine", "OpenAI Codex\nChatGPT (GPT-4o)\nGroq API\nMulti-Agent Orchestrator"),
+        ("🚀 Deployment", "Docker Containers\nVercel (Frontend)\nRender / Railway (Backend)\nGit & GitHub"),
+        ("🛠️ Developer Tools", "VS Code IDE\nReportLab Engine\nMarkdown PDF Generator\nPostman API Tools")
     ]
-    for line, col in bad_code:
-        p = tf.add_paragraph()
-        p.text = line
-        p.font.name = "Consolas"
-        p.font.size = Pt(9.5)
-        p.font.color.rgb = col
 
-    # Right Box: CodeMedic AI Output (Fixed)
-    card2 = add_card(slide9, Inches(6.8), Inches(2.0), Inches(5.733), Inches(4.6), bg_color=CARD_BG, border_color=GREEN)
-    
-    lbl2 = slide9.shapes.add_textbox(Inches(7.0), Inches(2.2), Inches(5.333), Inches(0.4))
-    tf = lbl2.text_frame
-    p = tf.paragraphs[0]
-    p.text = "✅ CODEMEDIC AI OUTPUT (Secure & Optimized O(1))"
-    p.font.name = FONT_TITLE
-    p.font.size = Pt(12)
-    p.font.bold = True
-    p.font.color.rgb = GREEN
+    cw9 = Inches(3.75)
+    ch9 = Inches(2.0)
+    gx9 = Inches(0.24)
+    gy9 = Inches(0.2)
 
-    c2_box = slide9.shapes.add_textbox(Inches(7.0), Inches(2.6), Inches(5.333), Inches(3.8))
-    tf = c2_box.text_frame
-    tf.word_wrap = True
-    good_code = [
-        ("@dataclass", SKY_BLUE),
-        ("class UserDTO:", TEXT_WHITE),
-        ("    id: str; name: str", TEXT_MUTED),
-        ("", TEXT_WHITE),
-        ("async def get_user_records(user_id: str) -> Optional[UserDTO]:", GREEN),
-        ("    '''Parametrized SQL query preventing injection + O(1) batch.'''", TEXT_DIM),
-        ("    stmt = text('SELECT id, name FROM users WHERE id = :id')", GREEN),
-        ("    res = await db.execute(stmt, {'id': user_id})", GREEN),
-        ("    batch_process_meta(res) # Refactored to single pass", GREEN),
-        ("    return UserDTO(**res.first())", GREEN)
-    ]
-    for line, col in good_code:
-        p = tf.add_paragraph()
-        p.text = line
-        p.font.name = "Consolas"
-        p.font.size = Pt(9.5)
-        p.font.color.rgb = col
+    for i, (cat_title, cat_text) in enumerate(stack_categories):
+        row = i // 3
+        col = i % 3
+        left = Inches(0.8) + col * (cw9 + gx9)
+        top = Inches(1.9) + row * (ch9 + gy9)
 
-    add_footer(slide9, 9)
+        card = add_glass_card(slide9, left, top, cw9, ch9, bg_color=CARD_BG, border_color=BORDER_GLOW)
+        tf = card.text_frame
+        tf.word_wrap = True
+        tf.margin_left = tf.margin_top = tf.margin_right = tf.margin_bottom = Inches(0.12)
 
-    # -------------------------------------------------------------
-    # SLIDE 10: UNIQUE SELLING POINTS
-    # -------------------------------------------------------------
+        p = tf.paragraphs[0]
+        p.text = cat_title
+        p.font.name = FONT_TITLE
+        p.font.size = Pt(12)
+        p.font.bold = True
+        p.font.color.rgb = SKY_BLUE
+
+        p_desc = tf.add_paragraph()
+        p_desc.text = cat_text
+        p_desc.font.name = FONT_BODY
+        p_desc.font.size = Pt(9.5)
+        p_desc.font.color.rgb = TEXT_MUTED
+
+    # Bottom Special Hackathon Banner
+    h_banner = add_glass_card(slide9, Inches(0.8), Inches(6.3), Inches(11.733), Inches(0.9), bg_color=CARD_BG_ALT, border_color=BORDER_PURPLE)
+    htf = h_banner.text_frame
+    htf.word_wrap = True
+    htf.margin_left = htf.margin_top = htf.margin_right = htf.margin_bottom = Inches(0.1)
+
+    p1 = htf.paragraphs[0]
+    p1.text = "⚡ AI DEVELOPMENT & HACKATHON TOOLS: OpenAI Codex  |  ChatGPT  |  Antigravity"
+    p1.font.name = FONT_TITLE
+    p1.font.size = Pt(11)
+    p1.font.bold = True
+    p1.font.color.rgb = PURPLE
+
+    p2 = htf.add_paragraph()
+    p2.text = "Leveraged during the Vibe Coding Hackathon for AI-assisted coding, rapid prototyping, prompt engineering, debugging, documentation generation, and UI component creation."
+    p2.font.name = FONT_BODY
+    p2.font.size = Pt(10)
+    p2.font.color.rgb = TEXT_WHITE
+
+    # ==========================================
+    # SLIDE 10: Core Features
+    # ==========================================
     slide10 = prs.slides.add_slide(blank_layout)
     set_bg(slide10)
-    add_header(slide10, "WHY CODEMEDIC AI?", "Competitive Advantage & USP Comparison Matrix", "How CodeMedic AI outperforms traditional linters and generic chat assistants.")
-    add_anim_badge(slide10, "Table Row Highlight")
+    add_header(slide10, "CORE FEATURES", "12 Powerful Capabilities Driving Developer Productivity", "Completely automating code reviews, bug hunting, testing, and technical documentation.")
+    add_anim_badge(slide10, "12-Card Cascade Reveal")
 
-    # Table Container Card
-    tcard = add_card(slide10, Inches(0.8), Inches(2.0), Inches(11.733), Inches(4.7), bg_color=CARD_BG, border_color=PRIMARY_BLUE)
+    # Add PDF Image 6 (Core Features visual banner)
+    img6_path = os.path.join(MEDIA_DIR, "image6.png")
+    if os.path.exists(img6_path):
+        slide10.shapes.add_picture(img6_path, Inches(3.4), Inches(1.7), width=Inches(6.5), height=Inches(2.2))
 
-    table_shape = slide10.shapes.add_table(7, 4, Inches(1.0), Inches(2.2), Inches(11.333), Inches(4.3))
-    table = table_shape.table
-    table.columns[0].width = Inches(3.533)
-    table.columns[1].width = Inches(2.6)
-    table.columns[2].width = Inches(2.6)
-    table.columns[3].width = Inches(2.6)
+    # 12 Feature Cards (4 columns x 3 rows) below/around
+    features_12 = [
+        ("🤖 1. Agentic AI Code Analysis", SKY_BLUE),
+        ("🐛 2. Intelligent Bug Detection", RED),
+        ("🛡️ 3. Security Vulnerability Analysis", AMBER),
+        ("⚡ 4. Performance Optimization", GREEN),
+        ("🔍 5. AI-Powered Code Review", PURPLE),
+        ("🧪 6. Automatic Unit Test Gen", INDIGO),
+        ("📚 7. AI Docs & Explanation", SKY_BLUE),
+        ("📊 8. Interactive Smart Dashboard", CYAN),
+        ("📑 9. Exportable PDF/MD Reports", PURPLE),
+        ("🌐 10. Multi-Language Support", SKY_BLUE),
+        ("💻 11. Professional Monaco Editor", TEXT_WHITE),
+        ("🚀 12. Productivity Enhancement", GREEN)
+    ]
 
-    headers = ["FEATURE / CAPABILITY", "TRADITIONAL LINTERS", "GENERIC CHATBOTS", "CODEMEDIC AI"]
-    for i, h in enumerate(headers):
-        cell = table.cell(0, i)
+    cw10 = Inches(2.75)
+    ch10 = Inches(0.85)
+    gx10 = Inches(0.24)
+    start_y10 = Inches(4.1)
+
+    for i, (feat_name, col_color) in enumerate(features_12):
+        row = i // 4
+        col = i % 4
+        left = Inches(0.8) + col * (cw10 + gx10)
+        top = start_y10 + row * (ch10 + Inches(0.15))
+
+        card = add_glass_card(slide10, left, top, cw10, ch10, bg_color=CARD_BG, border_color=BORDER_GLOW)
+        tf = card.text_frame
+        tf.word_wrap = True
+        tf.margin_left = tf.margin_top = tf.margin_right = tf.margin_bottom = Inches(0.1)
+
+        p = tf.paragraphs[0]
+        p.text = feat_name
+        p.font.name = FONT_TITLE
+        p.font.size = Pt(11)
+        p.font.bold = True
+        p.font.color.rgb = col_color
+        p.alignment = PP_ALIGN.CENTER
+
+    # ==========================================
+    # SLIDE 11: Innovation
+    # ==========================================
+    slide11 = prs.slides.add_slide(blank_layout)
+    set_bg(slide11)
+    add_header(slide11, "KEY INNOVATIONS", "Breakthrough Capabilities in AI Software Engineering", "Pioneering the transition from single-prompt chatbots to collaborative Multi-Agent coding.")
+    add_anim_badge(slide11, "Glass Card Morph & Pulse")
+
+    innovations = [
+        ("🤖 Agentic Coding Architecture", "Replaces single static AI models with a collaborative multi-agent network where specialized agents work together concurrently."),
+        ("🎯 Orchestrator-Based Workflow", "A central AI Orchestrator intelligently parses the codebase, assigns tasks to domain agents, and synthesizes results."),
+        ("🌐 All-in-One Development Platform", "Unifies debugging, security scanning, performance tuning, test generation, and documentation into a single dashboard."),
+        ("📊 Interactive Smart Dashboard", "Presents complex AI analysis through an intuitive visual dashboard with health scores and actionable suggestions."),
+        ("⚡ Automated Software Engineering", "Drastically cuts down manual engineering overhead, enabling developers to release high-quality code faster."),
+        ("📄 One-Click Technical Reports", "Generates comprehensive, downloadable engineering documentation in PDF, Markdown, and JSON formats instantly."),
+        ("🚀 Productivity Acceleration", "Transforms hours of manual code reviews and bug fixing into an automated, explainable AI workflow.")
+    ]
+
+    cw11 = Inches(3.75)
+    ch11 = Inches(2.2)
+    gx11 = Inches(0.24)
+    gy11 = Inches(0.2)
+
+    for i, (title, desc) in enumerate(innovations[:6]):
+        row = i // 3
+        col = i % 3
+        left = Inches(0.8) + col * (cw11 + gx11)
+        top = Inches(1.9) + row * (ch11 + gy11)
+
+        card = add_glass_card(slide11, left, top, cw11, ch11, bg_color=CARD_BG, border_color=BORDER_PURPLE)
+        tf = card.text_frame
+        tf.word_wrap = True
+        tf.margin_left = tf.margin_top = tf.margin_right = tf.margin_bottom = Inches(0.15)
+
+        p = tf.paragraphs[0]
+        p.text = title
+        p.font.name = FONT_TITLE
+        p.font.size = Pt(12)
+        p.font.bold = True
+        p.font.color.rgb = PURPLE
+
+        p_desc = tf.add_paragraph()
+        p_desc.text = f"\n{desc}"
+        p_desc.font.name = FONT_BODY
+        p_desc.font.size = Pt(10)
+        p_desc.font.color.rgb = TEXT_MUTED
+
+    # Bottom Full-width 7th innovation card
+    inn7 = add_glass_card(slide11, Inches(0.8), Inches(6.6), Inches(11.733), Inches(0.65), bg_color=CARD_BG_ALT, border_color=CYAN)
+    itf = inn7.text_frame
+    p = itf.paragraphs[0]
+    p.text = f"💡 {innovations[6][0]}: {innovations[6][1]}"
+    p.font.name = FONT_BODY
+    p.font.size = Pt(11)
+    p.font.bold = True
+    p.font.color.rgb = CYAN
+    p.alignment = PP_ALIGN.CENTER
+
+    # ==========================================
+    # SLIDE 12: Comparison
+    # ==========================================
+    slide12 = prs.slides.add_slide(blank_layout)
+    set_bg(slide12)
+    add_header(slide12, "SOLUTION COMPARISON", "CodeMedic AI vs Existing Tools & AI Chatbots", "Highlighting how CodeMedic AI outperforms traditional static analyzers and simple chatbots.")
+    add_anim_badge(slide12, "Comparison Row-by-Row Highlight")
+
+    # Table A: Feature Matrix
+    t_shape = slide12.shapes.add_table(8, 4, Inches(0.8), Inches(1.8), Inches(6.5), Inches(5.2))
+    table = t_shape.table
+    table.columns[0].width = Inches(2.6)
+    table.columns[1].width = Inches(1.3)
+    table.columns[2].width = Inches(1.2)
+    table.columns[3].width = Inches(1.4)
+
+    headers = ["Feature", "Static Tools", "AI Chatbots", "CodeMedic AI"]
+    for j, h in enumerate(headers):
+        cell = table.cell(0, j)
         cell.fill.solid()
-        cell.fill.fore_color.rgb = RGBColor(15, 23, 42)
+        cell.fill.fore_color.rgb = PRIMARY_BLUE
         p = cell.text_frame.paragraphs[0]
         p.text = h
         p.font.name = FONT_TITLE
-        p.font.size = Pt(11)
+        p.font.size = Pt(10.5)
         p.font.bold = True
-        p.font.color.rgb = CYAN if i == 3 else TEXT_WHITE
+        p.font.color.rgb = TEXT_WHITE
+        p.alignment = PP_ALIGN.CENTER
 
-    rows = [
-        ("Deep Context Security Analysis", "❌ Basic Regex Only", "⚠️ General Advice", "✅ Deep OWASP & Secret Scan"),
-        ("Complexity & Big-O Refactoring", "❌ No Support", "⚠️ Manual Prompting", "✅ Automated O(N^2) to O(1) Fix"),
-        ("Automated Unit Test Suite Gen", "❌ No Support", "⚠️ Fragmented Snippets", "✅ Complete PyTest / Jest Suites"),
-        ("Executive PDF Report Export", "❌ Raw Logs Only", "❌ No Support", "✅ 1-Click Formatted Audit PDF"),
-        ("Monaco Code Editor Experience", "❌ IDE Plugin Only", "❌ Simple Textarea", "✅ Fully Interactive Monaco UI"),
-        ("Senior Developer Explanation", "❌ Rule Codes Only", "⚠️ Generic Summaries", "✅ Step-by-Step Educational Insights")
+    rows_data = [
+        ("AI-Powered Analysis", "❌ Rule-only", "✅ Chat-based", "✅ Autonomous"),
+        ("Multi-Agent Architecture", "❌ None", "❌ Single model", "✅ Multi-Agent"),
+        ("Security Vulnerabilities", "✅ Static rules", "⚠️ Prompt-based", "✅ Automated SAST"),
+        ("Unit Test Generation", "❌ Manual", "✅ Prompt-based", "✅ Automatic"),
+        ("AI Code Documentation", "❌ None", "✅ Prompt-based", "✅ Auto-generated"),
+        ("Interactive Dashboard", "❌ Static list", "❌ Chat log", "✅ Smart Dashboard"),
+        ("Productivity Enhancement", "Moderate", "Moderate", "🚀 High Velocity")
     ]
 
-    for r_idx, row in enumerate(rows, start=1):
-        for c_idx, val in enumerate(row):
-            cell = table.cell(r_idx, c_idx)
+    for i, row in enumerate(rows_data):
+        for j, val in enumerate(row):
+            cell = table.cell(i+1, j)
             cell.fill.solid()
-            cell.fill.fore_color.rgb = CARD_BG
+            cell.fill.fore_color.rgb = CARD_BG if i % 2 == 0 else CARD_BG_ALT
             p = cell.text_frame.paragraphs[0]
             p.text = val
             p.font.name = FONT_BODY
-            p.font.size = Pt(10.5)
-            if c_idx == 3:
-                p.font.bold = True
-                p.font.color.rgb = GREEN
-            elif "❌" in val:
-                p.font.color.rgb = RED
-            elif "⚠️" in val:
-                p.font.color.rgb = AMBER
-            else:
-                p.font.color.rgb = TEXT_WHITE
+            p.font.size = Pt(9.5)
+            p.font.bold = (j == 3 or j == 0)
+            p.font.color.rgb = SKY_BLUE if j == 3 else TEXT_WHITE
+            if j > 0:
+                p.alignment = PP_ALIGN.CENTER
 
-    add_footer(slide10, 10)
+    # Table B: Workflow Shift (Right Side)
+    card_right = add_glass_card(slide12, Inches(7.5), Inches(1.8), Inches(5.033), Inches(5.2), bg_color=CARD_BG, border_color=BORDER_PURPLE)
+    crtf = card_right.text_frame
+    crtf.word_wrap = True
+    crtf.margin_left = crtf.margin_top = crtf.margin_right = crtf.margin_bottom = Inches(0.2)
 
-    # -------------------------------------------------------------
-    # SLIDE 11: IMPACT
-    # -------------------------------------------------------------
-    slide11 = prs.slides.add_slide(blank_layout)
-    set_bg(slide11)
-    add_header(slide11, "REAL-WORLD IMPACT", "Empowering Software Teams & Developers", "Measurable value delivered across the entire engineering lifecycle.")
-    add_anim_badge(slide11, "Card Entrance Transition")
+    p = crtf.paragraphs[0]
+    p.text = "TRADITIONAL WORKFLOW vs CODEMEDIC AI"
+    p.font.name = FONT_TITLE
+    p.font.size = Pt(11.5)
+    p.font.bold = True
+    p.font.color.rgb = PURPLE
 
-    impacts = [
-        ("👨‍💻 INDIVIDUAL DEVELOPERS", "Save 5+ Hours Weekly", "Eliminate repetitive debugging, get instant bug fixes, and write production-grade code faster.", PRIMARY_BLUE),
-        ("🎓 CS STUDENTS & LEARNERS", "Master Senior Best Practices", "Learn software architecture, security patterns, and Big-O optimization through detailed AI explanations.", CYAN),
-        ("🚀 ENGINEERING TEAMS", "Accelerate PR Reviews by 60%", "Remove code review bottlenecks, enforce consistent code standards, and ship features faster.", GREEN),
-        ("🏢 ENTERPRISES & OPEN SOURCE", "Zero Security Compromise", "Prevent zero-day vulnerabilities, maintain updated documentation, and reduce technical debt.", PURPLE)
+    shifts = [
+        ("Disconnected Tools", "Single Integrated Platform"),
+        ("Manual Debugging", "AI-Assisted Bug Detection"),
+        ("Separate Security Scanners", "Built-in Security Analysis"),
+        ("Manual Perf Optimization", "AI Performance Tuning"),
+        ("Manual Code Reviews", "Automated AI Code Review"),
+        ("Manual Documentation", "Auto AI Doc Generation"),
+        ("Manual Test Suite Creation", "Automatic Unit Test Gen"),
+        ("Time-Consuming Workflow", "Accelerated AI Development")
     ]
 
-    ix, iy = 0.8, 2.0
-    for category, headline, desc, accent in impacts:
-        card = add_card(slide11, Inches(ix), Inches(iy), Inches(5.6), Inches(2.2), bg_color=CARD_BG, border_color=accent)
-        
-        # Category
-        ic = slide11.shapes.add_textbox(Inches(ix + 0.2), Inches(iy + 0.15), Inches(5.2), Inches(0.35))
-        tf = ic.text_frame
-        p = tf.paragraphs[0]
-        p.text = category
-        p.font.name = FONT_TITLE
-        p.font.size = Pt(11)
-        p.font.bold = True
-        p.font.color.rgb = accent
+    for old_w, new_w in shifts:
+        ps = crtf.add_paragraph()
+        ps.text = f"• {old_w}  ➔  {new_w}"
+        ps.font.name = FONT_BODY
+        ps.font.size = Pt(9.5)
+        ps.font.color.rgb = TEXT_WHITE
 
-        # Headline
-        ih = slide11.shapes.add_textbox(Inches(ix + 0.2), Inches(iy + 0.55), Inches(5.2), Inches(0.5))
-        tf = ih.text_frame
-        p = tf.paragraphs[0]
-        p.text = headline
-        p.font.name = FONT_TITLE
-        p.font.size = Pt(16)
-        p.font.bold = True
-        p.font.color.rgb = TEXT_WHITE
+    # ==========================================
+    # SLIDE 13: Future Scope
+    # ==========================================
+    slide13 = prs.slides.add_slide(blank_layout)
+    set_bg(slide13)
+    add_header(slide13, "FUTURE SCOPE", "Product Roadmap & Strategic Expansion", "Scaling CodeMedic AI to enterprise teams and native IDE ecosystems.")
+    add_anim_badge(slide13, "Roadmap Node Travel & Pulse")
 
-        # Desc
-        id_box = slide11.shapes.add_textbox(Inches(ix + 0.2), Inches(iy + 1.1), Inches(5.2), Inches(0.95))
-        tf = id_box.text_frame
-        tf.word_wrap = True
-        p = tf.paragraphs[0]
-        p.text = desc
-        p.font.name = FONT_BODY
-        p.font.size = Pt(11)
-        p.font.color.rgb = TEXT_MUTED
-
-        ix += 6.0
-        if ix > 7.0:
-            ix = 0.8
-            iy += 2.4
-
-    add_footer(slide11, 11)
-
-    # -------------------------------------------------------------
-    # SLIDE 12: FUTURE SCOPE
-    # -------------------------------------------------------------
-    slide12 = prs.slides.add_slide(blank_layout)
-    set_bg(slide12)
-    add_header(slide12, "FUTURE ROADMAP", "Product Evolution & Vision", "Expanding from an interactive dashboard to complete developer ecosystem integration.")
-    add_anim_badge(slide12, "Roadmap Line Build")
-
-    roadmap = [
-        ("PHASE 01", "VS Code Extension", "Native IDE extension with squiggly error highlights and 1-click refactoring.", PRIMARY_BLUE),
-        ("PHASE 02", "GitHub CI/CD Integration", "Automated Pull Request scanner blocking vulnerable code merges.", SKY_BLUE),
-        ("PHASE 03", "Multi-File Analysis", "Cross-file dependency graph analysis and whole-repo refactoring.", CYAN),
-        ("PHASE 04", "Team Collaboration Memory", "Shared team coding standards, guidelines, and snippet memory.", PURPLE),
-        ("PHASE 05", "Enterprise API Platform", "REST API & self-hosted on-prem LLM deployment for security compliance.", AMBER),
-        ("PHASE 06", "Custom Fine-Tuned Models", "Domain-specific AI models trained on proprietary codebase styles.", GREEN)
+    roadmap_items = [
+        ("🔌 VS Code Extension", "Perform instant multi-agent code analysis directly inside developer IDEs."),
+        ("🐙 GitHub / GitLab Integration", "Automate pull request reviews and commit analysis via webhooks."),
+        ("📁 Repository-Level Analysis", "Expand beyond single files to analyze entire multi-repository projects."),
+        ("🔄 CI/CD Pipeline Integration", "Integrate into GitHub Actions, Azure DevOps, and Jenkins for build gates."),
+        ("👥 Enterprise Dashboard", "Enable team-based reviews, shared analytics, and role-based access controls."),
+        ("🧠 Self-Learning AI Agents", "Continuously refine model recommendations based on developer feedback loops."),
+        ("📱 Mobile Companion App", "Review critical security alerts and analysis summaries on mobile devices.")
     ]
 
-    rx, ry = 0.8, 2.0
-    for phase, title, desc, accent in roadmap:
-        card = add_card(slide12, Inches(rx), Inches(ry), Inches(3.6), Inches(2.2), bg_color=CARD_BG, border_color=accent)
-        
-        # Phase Tag
-        rp = slide12.shapes.add_textbox(Inches(rx + 0.15), Inches(ry + 0.15), Inches(3.3), Inches(0.35))
-        tf = rp.text_frame
-        p = tf.paragraphs[0]
-        p.text = phase
-        p.font.name = FONT_TITLE
-        p.font.size = Pt(10.5)
-        p.font.bold = True
-        p.font.color.rgb = accent
+    cw13 = Inches(3.75)
+    ch13 = Inches(2.1)
+    gx13 = Inches(0.24)
+    gy13 = Inches(0.2)
 
-        # Title
-        rt = slide12.shapes.add_textbox(Inches(rx + 0.15), Inches(ry + 0.5), Inches(3.3), Inches(0.55))
-        tf = rt.text_frame
+    for i, (title, desc) in enumerate(roadmap_items[:6]):
+        row = i // 3
+        col = i % 3
+        left = Inches(0.8) + col * (cw13 + gx13)
+        top = Inches(1.9) + row * (ch13 + gy13)
+
+        card = add_glass_card(slide13, left, top, cw13, ch13, bg_color=CARD_BG, border_color=BORDER_GLOW)
+        tf = card.text_frame
         tf.word_wrap = True
+        tf.margin_left = tf.margin_top = tf.margin_right = tf.margin_bottom = Inches(0.15)
+
+        p = tf.paragraphs[0]
+        p.text = title
+        p.font.name = FONT_TITLE
+        p.font.size = Pt(12)
+        p.font.bold = True
+        p.font.color.rgb = SKY_BLUE
+
+        p_desc = tf.add_paragraph()
+        p_desc.text = f"\n{desc}"
+        p_desc.font.name = FONT_BODY
+        p_desc.font.size = Pt(10)
+        p_desc.font.color.rgb = TEXT_MUTED
+
+    # Bottom 7th Roadmap Card
+    rm7 = add_glass_card(slide13, Inches(0.8), Inches(6.5), Inches(11.733), Inches(0.65), bg_color=CARD_BG_ALT, border_color=BORDER_PURPLE)
+    rtf7 = rm7.text_frame
+    p = rtf7.paragraphs[0]
+    p.text = f"📱 {roadmap_items[6][0]}: {roadmap_items[6][1]}"
+    p.font.name = FONT_BODY
+    p.font.size = Pt(11)
+    p.font.bold = True
+    p.font.color.rgb = PURPLE
+    p.alignment = PP_ALIGN.CENTER
+
+    # ==========================================
+    # SLIDE 14: Demo Flow
+    # ==========================================
+    slide14 = prs.slides.add_slide(blank_layout)
+    set_bg(slide14)
+    add_header(slide14, "PRODUCT DEMO", "Live Hackathon Demo Flow", "A 6-stage live demonstration walkthrough of CodeMedic AI in action.")
+    add_anim_badge(slide14, "Demo Stage Transition Arrows")
+
+    # Flow Bar
+    flow_steps = [
+        ("1. Landing Page", "Overview & Features", SKY_BLUE),
+        ("2. Secure Login", "JWT Auth Portal", PURPLE),
+        ("3. Monaco Editor", "Paste/Upload Code", INDIGO),
+        ("4. AI Analysis", "Multi-Agent Engine", CYAN),
+        ("5. Smart Dashboard", "Health Scores & Risks", GREEN),
+        ("6. Export Report", "Download PDF / MD", AMBER)
+    ]
+
+    cw14 = Inches(1.8)
+    gap14 = Inches(0.18)
+    start_x14 = Inches(0.8)
+
+    for i, (stage, desc, col_c) in enumerate(flow_steps):
+        left = start_x14 + i * (cw14 + gap14)
+        card = add_glass_card(slide14, left, Inches(1.9), cw14, Inches(4.8), bg_color=CARD_BG, border_color=BORDER_GLOW)
+        tf = card.text_frame
+        tf.word_wrap = True
+        tf.margin_left = tf.margin_top = tf.margin_right = tf.margin_bottom = Inches(0.12)
+
+        p = tf.paragraphs[0]
+        p.text = f"STAGE 0{i+1}"
+        p.font.name = FONT_TITLE
+        p.font.size = Pt(9.5)
+        p.font.bold = True
+        p.font.color.rgb = col_c
+
+        p_t = tf.add_paragraph()
+        p_t.text = f"\n{stage}"
+        p_t.font.name = FONT_TITLE
+        p_t.font.size = Pt(12)
+        p_t.font.bold = True
+        p_t.font.color.rgb = TEXT_WHITE
+
+        p_d = tf.add_paragraph()
+        p_d.text = f"\n{desc}"
+        p_d.font.name = FONT_BODY
+        p_d.font.size = Pt(10)
+        p_d.font.color.rgb = TEXT_MUTED
+
+        if i < 5:
+            arrow = slide14.shapes.add_textbox(left + cw14, Inches(3.8), gap14, Inches(0.5))
+            atf = arrow.text_frame
+            ap = atf.paragraphs[0]
+            ap.text = "➔"
+            ap.font.size = Pt(14)
+            ap.font.color.rgb = SKY_BLUE
+
+    # Bottom summary box
+    d_box = add_glass_card(slide14, Inches(0.8), Inches(6.85), Inches(11.733), Inches(0.45), bg_color=CARD_BG_ALT, border_color=CYAN)
+    dtf = d_box.text_frame
+    p = dtf.paragraphs[0]
+    p.text = "🎬 Live Demo Focus: Demonstrate real-time code parsing, multi-agent reasoning, interactive dashboard metrics, and one-click PDF report export."
+    p.font.name = FONT_BODY
+    p.font.size = Pt(10.5)
+    p.font.bold = True
+    p.font.color.rgb = CYAN
+    p.alignment = PP_ALIGN.CENTER
+
+    # ==========================================
+    # SLIDE 15: Conclusion
+    # ==========================================
+    slide15 = prs.slides.add_slide(blank_layout)
+    set_bg(slide15)
+    add_header(slide15, "CONCLUSION", "Transforming Developer Productivity via Agentic AI", "Empowering software engineers with autonomous multi-agent intelligence.")
+    add_anim_badge(slide15, "Final Keynote Outro & Logo Glow")
+
+    # Left Summary Card
+    l_card = add_glass_card(slide15, Inches(0.8), Inches(1.9), Inches(5.7), Inches(5.1), bg_color=CARD_BG, border_color=BORDER_GLOW)
+    ltf = l_card.text_frame
+    ltf.word_wrap = True
+    ltf.margin_left = ltf.margin_top = ltf.margin_right = ltf.margin_bottom = Inches(0.2)
+
+    p = ltf.paragraphs[0]
+    p.text = "KEY TAKEAWAYS & IMPACT"
+    p.font.name = FONT_TITLE
+    p.font.size = Pt(12)
+    p.font.bold = True
+    p.font.color.rgb = SKY_BLUE
+
+    takeaways = [
+        "Replaces fragmented static analysis tools with a collaborative Multi-Agent AI architecture.",
+        "Significantly reduces debugging, security scanning, performance tuning, and code review cycles.",
+        "Generates automated unit tests and explainable developer-friendly documentation.",
+        "Empowers developers and software engineering teams to ship secure, high-quality code faster.",
+        "Demonstrates the transformative potential of Agentic Coding in modern software development."
+    ]
+
+    for t in takeaways:
+        pt = ltf.add_paragraph()
+        pt.text = f"\n• {t}"
+        pt.font.name = FONT_BODY
+        pt.font.size = Pt(11)
+        pt.font.color.rgb = TEXT_WHITE
+
+    # Right Hero Closing Card
+    r_card = add_glass_card(slide15, Inches(6.8), Inches(1.9), Inches(5.733), Inches(5.1), bg_color=CARD_BG_ALT, border_color=BORDER_PURPLE)
+    rtf15 = r_card.text_frame
+    rtf15.word_wrap = True
+    rtf15.margin_left = rtf15.margin_top = rtf15.margin_right = rtf15.margin_bottom = Inches(0.25)
+
+    p = rtf15.paragraphs[0]
+    p.text = "CodeMedic AI"
+    p.font.name = FONT_TITLE
+    p.font.size = Pt(34)
+    p.font.bold = True
+    p.font.color.rgb = SKY_BLUE
+
+    p_sub = rtf15.add_paragraph()
+    p_sub.text = "Fix. Explain. Optimize.\n"
+    p_sub.font.name = FONT_TITLE
+    p_sub.font.size = Pt(18)
+    p_sub.font.bold = True
+    p_sub.font.color.rgb = TEXT_WHITE
+
+    p_pow = rtf15.add_paragraph()
+    p_pow.text = "⚡ Powered by OpenAI Codex\n"
+    p_pow.font.name = FONT_BODY
+    p_pow.font.size = Pt(14)
+    p_pow.font.bold = True
+    p_pow.font.color.rgb = PURPLE
+
+    p_dev = rtf15.add_paragraph()
+    p_dev.text = "DEVELOPED BY: Umer Khan\nB.E. Artificial Intelligence & Data Science\n\nOPENAI CODEX HACKATHON 2026\nTrack: Agentic Coding"
+    p_dev.font.name = FONT_BODY
+    p_dev.font.size = Pt(12)
+    p_dev.font.color.rgb = CYAN
+
+    qp = rtf15.add_paragraph()
+    qp.text = '\n\n“Empowering developers through Agentic Coding—building smarter software with autonomous AI agents.”'
+    qp.font.name = FONT_TITLE
+    qp.font.size = Pt(11.5)
+    qp.font.bold = True
+    qp.font.italic = True
+    qp.font.color.rgb = TEXT_WHITE
+    qp.alignment = PP_ALIGN.CENTER
+
+    # ==========================================
+    # SLIDE 16: Dedicated Project Links & Resources
+    # ==========================================
+    slide16 = prs.slides.add_slide(blank_layout)
+    set_bg(slide16)
+    add_header(slide16, "PROJECT RESOURCES & LINKS", "CodeMedic AI Access & Repository Portal", "Explore the open-source GitHub codebase, live web application, technical documentation, and developer contact.")
+    add_anim_badge(slide16, "Final Slide Pulse & Link Glow")
+
+    # 4 Main Dedicated Link Cards (2x2 Grid)
+    link_cards_data = [
+        ("📂  GitHub Repository", "github.com/UmerKhan/CodeMedic-AI", SKY_BLUE, "Complete open-source repository including frontend, backend multi-agent services, Docker compose scripts, and ReportLab PDF generators."),
+        ("🌐  Live Web Application", "codemedic-ai.vercel.app", GREEN, "Production application featuring Monaco Code Editor, SSE progress streaming, interactive health score dashboard, and multi-format report exports."),
+        ("📄  API & Technical Docs", "docs.codemedic-ai.dev", PURPLE, "Comprehensive technical documentation detailing multi-agent schemas, FastAPI route endpoints, report mappers, and setup guides."),
+        ("📧  Developer Contact", "umerkhan.dev@gmail.com", CYAN, "Umer Khan | B.E. Artificial Intelligence & Data Science\nOpenAI Codex Hackathon 2026 • Track: Agentic Coding")
+    ]
+
+    cw16 = Inches(5.7)
+    ch16 = Inches(2.2)
+    gx16 = Inches(0.33)
+    gy16 = Inches(0.2)
+
+    for i, (title, url, col_c, desc) in enumerate(link_cards_data):
+        row = i // 2
+        col = i % 2
+        left = Inches(0.8) + col * (cw16 + gx16)
+        top = Inches(1.9) + row * (ch16 + gy16)
+
+        card = add_glass_card(slide16, left, top, cw16, ch16, bg_color=CARD_BG, border_color=BORDER_GLOW)
+        tf = card.text_frame
+        tf.word_wrap = True
+        tf.margin_left = tf.margin_top = tf.margin_right = tf.margin_bottom = Inches(0.15)
+
         p = tf.paragraphs[0]
         p.text = title
         p.font.name = FONT_TITLE
@@ -912,158 +1109,38 @@ def create_presentation():
         p.font.bold = True
         p.font.color.rgb = TEXT_WHITE
 
-        # Desc
-        rd = slide12.shapes.add_textbox(Inches(rx + 0.15), Inches(ry + 1.1), Inches(3.3), Inches(0.95))
-        tf = rd.text_frame
-        tf.word_wrap = True
-        p = tf.paragraphs[0]
-        p.text = desc
-        p.font.name = FONT_BODY
-        p.font.size = Pt(10.5)
-        p.font.color.rgb = TEXT_MUTED
+        p_url = tf.add_paragraph()
+        p_url.text = f"🔗 {url}"
+        p_url.font.name = FONT_TITLE
+        p_url.font.size = Pt(12)
+        p_url.font.bold = True
+        p_url.font.color.rgb = col_c
 
-        rx += 3.9
-        if rx > 9.0:
-            rx = 0.8
-            ry += 2.4
+        p_desc = tf.add_paragraph()
+        p_desc.text = f"\n{desc}"
+        p_desc.font.name = FONT_BODY
+        p_desc.font.size = Pt(10.5)
+        p_desc.font.color.rgb = TEXT_MUTED
 
-    add_footer(slide12, 12)
-
-    # -------------------------------------------------------------
-    # SLIDE 13: LIVE DEMO
-    # -------------------------------------------------------------
-    slide13 = prs.slides.add_slide(blank_layout)
-    set_bg(slide13)
-    add_header(slide13, "PRESENTATION DEMO", "Live Stage Demonstration Sequence", "Follow along as we present CodeMedic AI live in action.")
-    add_anim_badge(slide13, "Step-by-Step Live Highlight")
-
-    demo_steps = [
-        ("Step 1: Open Web App", "Launch CodeMedic AI Web Dashboard", PRIMARY_BLUE),
-        ("Step 2: Input Vulnerable Code", "Paste SQLi O(N^2) code snippet into Monaco Editor", CYAN),
-        ("Step 3: Trigger AI Analysis", "Click 'Analyze Code' button to activate multi-agent scan", PURPLE),
-        ("Step 4: Review Security & Fixes", "Inspect detected vulnerabilities & O(1) refactored code", GREEN),
-        ("Step 5: Inspect Generated Tests", "View auto-generated PyTest unit test suite", SKY_BLUE),
-        ("Step 6: Download PDF Report", "Click 'Export Audit' to download formatted executive PDF", AMBER)
-    ]
-
-    dx = 0.8
-    dy = 2.0
-    for d_title, d_sub, accent in demo_steps:
-        card = add_card(slide13, Inches(dx), Inches(dy), Inches(5.6), Inches(1.35), bg_color=CARD_BG, border_color=accent)
-        
-        # Step Header
-        dh = slide13.shapes.add_textbox(Inches(dx + 0.2), Inches(dy + 0.15), Inches(5.2), Inches(0.4))
-        tf = dh.text_frame
-        p = tf.paragraphs[0]
-        p.text = d_title
-        p.font.name = FONT_TITLE
-        p.font.size = Pt(14)
-        p.font.bold = True
-        p.font.color.rgb = accent
-
-        # Step Subtext
-        ds = slide13.shapes.add_textbox(Inches(dx + 0.2), Inches(dy + 0.55), Inches(5.2), Inches(0.65))
-        tf = ds.text_frame
-        tf.word_wrap = True
-        p = tf.paragraphs[0]
-        p.text = d_sub
-        p.font.name = FONT_BODY
-        p.font.size = Pt(11)
-        p.font.color.rgb = TEXT_WHITE
-
-        dx += 6.0
-        if dx > 7.0:
-            dx = 0.8
-            dy += 1.55
-
-    add_footer(slide13, 13)
-
-    # -------------------------------------------------------------
-    # SLIDE 14: THANK YOU & LINKS
-    # -------------------------------------------------------------
-    slide14 = prs.slides.add_slide(blank_layout)
-    set_bg(slide14)
-
-    # Left Container Hero Card
-    card = add_card(slide14, Inches(0.8), Inches(1.0), Inches(7.5), Inches(5.5), bg_color=CARD_BG, border_color=PRIMARY_BLUE)
-
-    tbox = slide14.shapes.add_textbox(Inches(1.1), Inches(1.4), Inches(7.0), Inches(1.0))
-    tf = tbox.text_frame
-    p = tf.paragraphs[0]
-    p.text = "CodeMedic AI"
-    p.font.name = FONT_TITLE
-    p.font.size = Pt(44)
-    p.font.bold = True
-    p.font.color.rgb = TEXT_WHITE
-
-    tag = slide14.shapes.add_textbox(Inches(1.1), Inches(2.4), Inches(7.0), Inches(0.5))
-    tf = tag.text_frame
-    p = tf.paragraphs[0]
-    p.text = "Fix. Explain. Optimize. Powered by AI."
-    p.font.name = FONT_TITLE
-    p.font.size = Pt(18)
+    # Bottom Full-width Hero Banner with QR / Access Callout
+    bot_card = add_glass_card(slide16, Inches(0.8), Inches(6.6), Inches(11.733), Inches(0.65), bg_color=CARD_BG_ALT, border_color=BORDER_PURPLE)
+    btf16 = bot_card.text_frame
+    p = btf16.paragraphs[0]
+    p.text = "📱 Scan QR Code or Visit Links to Access Live Demo, Full Codebase & Download Technical Audit Reports."
+    p.font.name = FONT_BODY
+    p.font.size = Pt(11.5)
     p.font.bold = True
     p.font.color.rgb = SKY_BLUE
-
-    desc = slide14.shapes.add_textbox(Inches(1.1), Inches(3.0), Inches(6.8), Inches(1.0))
-    tf = desc.text_frame
-    tf.word_wrap = True
-    p = tf.paragraphs[0]
-    p.text = "Thank you for reviewing CodeMedic AI! Together, let's elevate software engineering quality, security, and developer speed with AI co-pilots."
-    p.font.name = FONT_BODY
-    p.font.size = Pt(13)
-    p.font.color.rgb = TEXT_MUTED
-
-    links = [
-        ("📂 GitHub Repository:", "github.com/username/codemedic-ai", CYAN),
-        ("🌐 Live Interactive Demo:", "codemedic-ai.vercel.app", GREEN),
-        ("📧 Team Contact:", "team@codemedic.ai", PURPLE)
-    ]
-    ly = 4.2
-    for label, url, color in links:
-        box = slide14.shapes.add_textbox(Inches(1.1), Inches(ly), Inches(6.8), Inches(0.45))
-        tf = box.text_frame
-        p = tf.paragraphs[0]
-        p.text = f"{label}  {url}"
-        p.font.name = FONT_BODY
-        p.font.size = Pt(12)
-        p.font.bold = True
-        p.font.color.rgb = color
-        ly += 0.5
-
-    # Right Card: QR Code / Submission Placeholder Frame
-    qr_card = add_card(slide14, Inches(8.6), Inches(1.0), Inches(3.933), Inches(5.5), bg_color=CARD_BG, border_color=CYAN)
-
-    qr_box = slide14.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(9.1), Inches(1.6), Inches(2.933), Inches(2.933))
-    qr_box.fill.solid()
-    qr_box.fill.fore_color.rgb = RGBColor(15, 23, 42)
-    qr_box.line.color.rgb = SKY_BLUE
-    qr_box.line.width = Pt(1)
-    tf = qr_box.text_frame
-    p = tf.paragraphs[0]
-    p.text = "[ QR CODE PLACEHOLDER ]\n\nScan to Access\nLive Demo & Docs"
-    p.font.name = FONT_BODY
-    p.font.size = Pt(11)
-    p.font.color.rgb = TEXT_MUTED
     p.alignment = PP_ALIGN.CENTER
 
-    qt = slide14.shapes.add_textbox(Inches(8.8), Inches(4.8), Inches(3.533), Inches(1.2))
-    tf = qt.text_frame
-    tf.word_wrap = True
-    p = tf.paragraphs[0]
-    p.text = "Q & A SESSION\nWe welcome questions from the judges and audience!"
-    p.font.name = FONT_TITLE
-    p.font.size = Pt(12)
-    p.font.bold = True
-    p.font.color.rgb = TEXT_WHITE
-    p.alignment = PP_ALIGN.CENTER
-
-    add_anim_badge(slide14, "Final Slide Pulse & Call-to-Action")
-    add_footer(slide14, 14)
-
-    output_filename = "CodeMedic_AI_Hackathon_Presentation.pptx"
-    prs.save(output_filename)
-    print(f"SUCCESS: Presentation saved as '{output_filename}' in {os.getcwd()}")
+    out_file = "CodeMedic_AI_Hackathon_Presentation.pptx"
+    try:
+        prs.save(out_file)
+        print(f"Presentation saved successfully: {out_file}")
+    except PermissionError:
+        out_file_v2 = "CodeMedic_AI_Hackathon_Presentation_V2.pptx"
+        prs.save(out_file_v2)
+        print(f"Original file locked by PowerPoint. Saved to: {out_file_v2}")
 
 if __name__ == "__main__":
     create_presentation()
