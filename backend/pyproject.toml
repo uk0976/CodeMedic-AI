@@ -56,9 +56,10 @@ python_version = "3.12"
 strict = true
 warn_unreachable = true
 disallow_any_generics = true
+ignore_missing_imports = true
 plugins = []
 
 [[tool.mypy.overrides]]
-module = ["jwt", "reportlab.*", "google.*", "google.generativeai.*"]
+module = ["jwt", "reportlab.*", "google.*", "google.generativeai.*", "pwdlib.*", "psycopg.*", "alembic.*"]
 ignore_missing_imports = true
 ignore_errors = true

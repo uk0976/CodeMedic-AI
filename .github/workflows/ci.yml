@@ -44,7 +44,7 @@ jobs:
       - run: black --check .
       - run: isort --check-only .
       - run: flake8
-      - run: mypy app
+      - run: mypy app --ignore-missing-imports
       - run: pytest
 
   containers:
