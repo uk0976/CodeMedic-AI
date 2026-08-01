@@ -4,6 +4,7 @@ import os
 from app.core.config import get_settings
 from app.services.providers.base import BaseAIProvider
 from app.services.providers.gemini_provider import GeminiProvider
+from app.services.providers.groq_provider import GroqProvider
 from app.services.providers.local_provider import LocalFallbackProvider
 from app.services.providers.openai_provider import OpenAIProvider
 
@@ -19,6 +20,13 @@ def get_ai_provider() -> BaseAIProvider:
     3. Fallback to LocalFallbackProvider for zero-friction standalone operations.
     """
     provider_type = os.getenv("AI_PROVIDER", "").lower()
+
+    if provider_type == "groq" or (not provider_type and os.getenv("GROQ_API_KEY")):
+        try:
+            logger.info("Initializing GroqProvider...")
+            return GroqProvider()
+        except Exception as e:
+            logger.warning(f"Failed to initialize GroqProvider ({e}). Falling back.")
 
     if provider_type == "openai" or (not provider_type and settings.openai_api_key):
         try:
