@@ -61,3 +61,4 @@ plugins = []
 [[tool.mypy.overrides]]
 module = ["jwt", "reportlab.*", "google.*", "google.generativeai.*"]
 ignore_missing_imports = true
+ignore_errors = true
