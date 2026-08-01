@@ -25,11 +25,16 @@ class AnalysisReport(Base):
     code: Mapped[str] = mapped_column(Text, nullable=False)
     optimized_code: Mapped[str] = mapped_column(Text, nullable=False)
 
-    # JSON results payloads
+    # Detailed Summaries and Explanations
     summary: Mapped[str] = mapped_column(Text, nullable=False)
+    code_explanation: Mapped[str | None] = mapped_column(Text, nullable=True)
+    why_better: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    # JSON results payloads
     issues: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list)
     security: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list)
     performance: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list)
+    code_review: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list)
     complexity: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
     tests: Mapped[list[str]] = mapped_column(JSON, default=list)
 

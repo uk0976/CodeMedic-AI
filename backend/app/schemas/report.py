@@ -17,9 +17,12 @@ class ReportCreateSchema(BaseModel):
     code: str
     optimized_code: str
     summary: str
+    code_explanation: str | None = Field(default=None)
+    why_better: str | None = Field(default=None)
     issues: list[dict[str, Any]] = Field(default_factory=list)
     security: list[dict[str, Any]] = Field(default_factory=list)
     performance: list[dict[str, Any]] = Field(default_factory=list)
+    code_review: list[dict[str, Any]] = Field(default_factory=list)
     complexity: dict[str, Any] = Field(default_factory=dict)
     tests: list[str] = Field(default_factory=list)
 
@@ -54,9 +57,12 @@ class ReportDetailSchema(BaseModel):
     code: str
     optimized_code: str
     summary: str
+    code_explanation: str | None = None
+    why_better: str | None = None
     issues: list[dict[str, Any]]
     security: list[dict[str, Any]]
     performance: list[dict[str, Any]]
+    code_review: list[dict[str, Any]] = Field(default_factory=list)
     complexity: dict[str, Any]
     tests: list[str]
     created_at: datetime

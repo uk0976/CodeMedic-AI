@@ -6,11 +6,12 @@ import { EditorSidebar } from "@/components/editor/editor-sidebar";
 import { EditorToolbar } from "@/components/editor/editor-toolbar";
 import { EditorStatusBar } from "@/components/editor/editor-status-bar";
 import { EditorRightPanel, AnalysisResult } from "@/components/editor/editor-right-panel";
+import { FullAnalysisReport } from "@/components/editor/full-analysis-report";
 import { QuickModeCards, AnalysisMode } from "@/components/editor/quick-mode-cards";
 import { UploadZone } from "@/components/editor/upload-zone";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSearchParams, useRouter } from "next/navigation";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, FileText, Code2 } from "lucide-react";
 import { env } from "@/lib/env";
 import { 
   PanelLeftClose, 
@@ -52,6 +53,7 @@ function EditorWorkspacePageContent() {
   const [fileName, setFileName] = useState<string>("untitled.py");
   const [language, setLanguage] = useState<string>("python");
   const [showEditor, setShowEditor] = useState<boolean>(false);
+  const [viewMode, setViewMode] = useState<"editor" | "report">("editor");
 
   // Editor Preferences
   const [editorTheme, setEditorTheme] = useState<"vs-dark" | "light">("vs-dark");
@@ -65,6 +67,7 @@ function EditorWorkspacePageContent() {
   const [totalChars, setTotalChars] = useState<number>(0);
   const [editorStatus, setEditorStatus] = useState<"Ready" | "Modified" | "Saved" | "Formatting" | "Analyzing">("Ready");
   const [analysisResults, setAnalysisResults] = useState<AnalysisResult | null>(null);
+  const [savedReportId, setSavedReportId] = useState<string | undefined>(undefined);
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
   const [loadingMessage, setLoadingMessage] = useState<string | null>(null);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
@@ -93,7 +96,6 @@ function EditorWorkspacePageContent() {
     "Go", "Rust", "PHP", "HTML", "CSS", "SQL", "Bash", "JSON", "Markdown"
   ];
 
-  // Debounced auto-save simulation
   useEffect(() => {
     if (editorStatus === "Modified") {
       const timer = setTimeout(() => {
@@ -106,13 +108,11 @@ function EditorWorkspacePageContent() {
   const handleEditorMount = (editor: MonacoEditorInstance) => {
     editorRef.current = editor;
 
-    // Line/Col Telemetry
     editor.onDidChangeCursorPosition((e: MonacoEditorCursorEvent) => {
       setCursorLine(e.position.lineNumber);
       setCursorCol(e.position.column);
     });
 
-    // Content Telemetry
     editor.onDidChangeModelContent(() => {
       const val = editor.getValue();
       setCode(val);
@@ -121,7 +121,6 @@ function EditorWorkspacePageContent() {
       setEditorStatus("Modified");
     });
 
-    // Load initial counts
     const initialVal = editor.getValue();
     setTotalLines(editor.getModel()?.getLineCount() || 1);
     setTotalChars(initialVal.length);
@@ -132,9 +131,11 @@ function EditorWorkspacePageContent() {
     setLanguage(lang);
     setCode(content);
     setShowEditor(true);
+    setViewMode("editor");
     setEditorStatus("Saved");
     setTotalChars(content.length);
     setAnalysisResults(null);
+    setSavedReportId(undefined);
     setAnalysisError(null);
   };
 
@@ -143,9 +144,11 @@ function EditorWorkspacePageContent() {
     setLanguage(lang);
     setCode(content);
     setShowEditor(true);
+    setViewMode("editor");
     setEditorStatus("Saved");
     setTotalChars(content.length);
     setAnalysisResults(null);
+    setSavedReportId(undefined);
     setAnalysisError(null);
   };
 
@@ -175,10 +178,12 @@ function EditorWorkspacePageContent() {
     setFileName("untitled.py");
     setLanguage("python");
     setShowEditor(false);
+    setViewMode("editor");
     setEditorStatus("Ready");
     setTotalChars(0);
     setTotalLines(1);
     setAnalysisResults(null);
+    setSavedReportId(undefined);
     setAnalysisError(null);
   };
 
@@ -271,7 +276,7 @@ function EditorWorkspacePageContent() {
 
       if (finalResult) {
         try {
-          await fetch(`${env.apiUrl}/api/v1/reports/`, {
+          const saveRes = await fetch(`${env.apiUrl}/api/v1/reports/`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -280,24 +285,33 @@ function EditorWorkspacePageContent() {
               file_name: fileName,
               language: language,
               analysis_type: analysisType,
-              code_quality_score: finalResult.confidence || 85,
-              bug_count: finalResult.issues?.length || 0,
-              security_score: Math.max(0, 100 - (finalResult.security?.length || 0) * 15),
-              analysis_duration: Math.floor(Math.random() * 5) + 2,
-              confidence: finalResult.confidence || 90,
+              code_quality_score: finalResult.code_health_score || finalResult.confidence || 85,
+              bug_count: (finalResult.issues?.length || 0) + (finalResult.security?.length || 0),
+              security_score: finalResult.security_score || Math.max(0, 100 - (finalResult.security?.length || 0) * 15),
+              analysis_duration: Math.floor(Math.random() * 4) + 2,
+              confidence: finalResult.confidence || 95,
               code: code,
               optimized_code: finalResult.optimized_code || code,
               summary: finalResult.summary || "Code diagnostics completed successfully.",
+              code_explanation: finalResult.code_explanation,
+              why_better: finalResult.why_better,
               issues: finalResult.issues || [],
               security: finalResult.security || [],
               performance: finalResult.performance || [],
+              code_review: finalResult.code_review || [],
               complexity: finalResult.complexity || {},
               tests: finalResult.tests || []
             })
           });
+          if (saveRes.ok) {
+            const savedData = await saveRes.json();
+            setSavedReportId(savedData.id);
+          }
         } catch (saveErr) {
           console.error("Failed to save report to history repository:", saveErr);
         }
+        // Auto-switch to full-page report workspace
+        setViewMode("report");
       }
 
     } catch (err: unknown) {
@@ -358,7 +372,7 @@ function EditorWorkspacePageContent() {
           supportedLanguages={supportedLanguages}
         />
 
-        {/* Panel Control Toggles (Visual helper controls) */}
+        {/* Panel Control Toggles & View Mode Switcher */}
         <div className="flex items-center justify-between border-b border-slate-900 bg-slate-950/20 px-4.5 py-1.5 text-xs text-slate-500 font-medium">
           <div className="flex items-center gap-3">
             <button
@@ -370,6 +384,31 @@ function EditorWorkspacePageContent() {
               {sidebarOpen ? <PanelLeftClose className="size-4" /> : <PanelLeftOpen className="size-4" />}
               <span className="hidden sm:inline">Explorer</span>
             </button>
+
+            {analysisResults && (
+              <>
+                <div className="h-3 w-[1px] bg-slate-800" />
+                <div className="flex items-center gap-1 bg-slate-900 p-0.5 rounded-lg border border-slate-800">
+                  <button
+                    onClick={() => setViewMode("editor")}
+                    className={`px-2.5 py-1 rounded text-[11px] font-semibold transition flex items-center gap-1.5 ${
+                      viewMode === "editor" ? "bg-blue-600 text-white" : "text-slate-400 hover:text-slate-200"
+                    }`}
+                  >
+                    <Code2 className="w-3.5 h-3.5" /> Monaco Editor
+                  </button>
+                  <button
+                    onClick={() => setViewMode("report")}
+                    className={`px-2.5 py-1 rounded text-[11px] font-semibold transition flex items-center gap-1.5 ${
+                      viewMode === "report" ? "bg-blue-600 text-white" : "text-slate-400 hover:text-slate-200"
+                    }`}
+                  >
+                    <FileText className="w-3.5 h-3.5" /> Full Audit Report
+                  </button>
+                </div>
+              </>
+            )}
+
             <div className="h-3 w-[1px] bg-slate-800" />
             <button
               type="button"
@@ -398,91 +437,106 @@ function EditorWorkspacePageContent() {
           </div>
         </div>
 
-        {/* Dynamic Editor Panel / Empty State Drag-over */}
+        {/* Dynamic Editor Panel OR Full Analysis Report Workspace */}
         <div className="flex-1 relative overflow-hidden bg-[#070913]">
-          <AnimatePresence mode="wait">
-            {!showEditor ? (
-              <motion.div
-                key="empty-state"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="h-full w-full"
-              >
-                <UploadZone
-                  onFileLoaded={handleFileLoaded}
-                  isDragging={isDragging}
-                  onDragStateChange={setIsDragging}
-                />
-              </motion.div>
-            ) : (
-              <motion.div
-                key="monaco-editor"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="h-full w-full relative"
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  setIsDragging(true);
-                }}
-              >
-                {/* Drag Overlay when editor is active */}
-                {isDragging && (
-                  <div 
-                    onDragLeave={() => setIsDragging(false)}
-                    onDrop={(e) => {
-                      e.preventDefault();
-                      setIsDragging(false);
-                      const files = e.dataTransfer.files;
-                      if (files && files.length > 0) {
-                        const reader = new FileReader();
-                        reader.onload = (ev) => {
-                          setCode(ev.target?.result as string);
-                          setFileName(files[0].name);
-                          setEditorStatus("Saved");
-                        };
-                        reader.readAsText(files[0]);
-                      }
-                    }}
-                    className="absolute inset-0 z-10 bg-cyan-950/20 backdrop-blur-xs border-2 border-dashed border-cyan-500/40 flex items-center justify-center text-cyan-400 font-semibold text-sm pointer-events-auto"
-                  >
-                    Drop files to load into editor
-                  </div>
-                )}
-
-                <Editor
-                  height="100%"
-                  language={language}
-                  value={code}
-                  theme={editorTheme}
-                  onMount={handleEditorMount}
-                  onChange={(val) => setCode(val || "")}
-                  options={{
-                    fontSize: fontSize,
-                    wordWrap: wordWrap ? "on" : "off",
-                    minimap: { enabled: true },
-                    automaticLayout: true,
-                    tabSize: 4,
-                    lineHeight: 22,
-                    fontFamily: "Fira Code, Menlo, Monaco, Consolas, monospace",
-                    cursorBlinking: "smooth",
-                    cursorSmoothCaretAnimation: "on",
-                    padding: { top: 16, bottom: 16 },
-                    scrollBeyondLastLine: false,
-                    folding: true,
-                    bracketPairColorization: { enabled: true },
-                    autoIndent: "full"
+          {viewMode === "report" && analysisResults ? (
+            <FullAnalysisReport
+              data={analysisResults}
+              originalCode={code}
+              language={language}
+              fileName={fileName}
+              reportId={savedReportId}
+              onApplyFix={(newCode) => {
+                setCode(newCode);
+                setViewMode("editor");
+                setEditorStatus("Saved");
+              }}
+              onCloseReport={() => setViewMode("editor")}
+            />
+          ) : (
+            <AnimatePresence mode="wait">
+              {!showEditor ? (
+                <motion.div
+                  key="empty-state"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="h-full w-full"
+                >
+                  <UploadZone
+                    onFileLoaded={handleFileLoaded}
+                    isDragging={isDragging}
+                    onDragStateChange={setIsDragging}
+                  />
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="monaco-editor"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="h-full w-full relative"
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setIsDragging(true);
                   }}
-                  loading={
-                    <div className="flex h-full w-full flex-col items-center justify-center gap-3 bg-[#070913] text-slate-400">
-                      <div className="h-6 w-6 animate-spin rounded-full border-2 border-cyan-500/20 border-t-cyan-400" />
-                      <span className="text-xs font-semibold">Initializing Monaco...</span>
+                >
+                  {isDragging && (
+                    <div 
+                      onDragLeave={() => setIsDragging(false)}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        setIsDragging(false);
+                        const files = e.dataTransfer.files;
+                        if (files && files.length > 0) {
+                          const reader = new FileReader();
+                          reader.onload = (ev) => {
+                            setCode(ev.target?.result as string);
+                            setFileName(files[0].name);
+                            setEditorStatus("Saved");
+                          };
+                          reader.readAsText(files[0]);
+                        }
+                      }}
+                      className="absolute inset-0 z-10 bg-cyan-950/20 backdrop-blur-xs border-2 border-dashed border-cyan-500/40 flex items-center justify-center text-cyan-400 font-semibold text-sm pointer-events-auto"
+                    >
+                      Drop files to load into editor
                     </div>
-                  }
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
+                  )}
+
+                  <Editor
+                    height="100%"
+                    language={language}
+                    value={code}
+                    theme={editorTheme}
+                    onMount={handleEditorMount}
+                    onChange={(val) => setCode(val || "")}
+                    options={{
+                      fontSize: fontSize,
+                      wordWrap: wordWrap ? "on" : "off",
+                      minimap: { enabled: true },
+                      automaticLayout: true,
+                      tabSize: 4,
+                      lineHeight: 22,
+                      fontFamily: "Fira Code, Menlo, Monaco, Consolas, monospace",
+                      cursorBlinking: "smooth",
+                      cursorSmoothCaretAnimation: "on",
+                      padding: { top: 16, bottom: 16 },
+                      scrollBeyondLastLine: false,
+                      folding: true,
+                      bracketPairColorization: { enabled: true },
+                      autoIndent: "full"
+                    }}
+                    loading={
+                      <div className="flex h-full w-full flex-col items-center justify-center gap-3 bg-[#070913] text-slate-400">
+                        <div className="h-6 w-6 animate-spin rounded-full border-2 border-cyan-500/20 border-t-cyan-400" />
+                        <span className="text-xs font-semibold">Initializing Monaco...</span>
+                      </div>
+                    }
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          )}
 
           {/* Analysis progress / error overlay */}
           {(isAnalyzing || analysisError) && (
@@ -566,10 +620,12 @@ function EditorWorkspacePageContent() {
         </div>
 
         {/* Diagnostic Selectable Actions */}
-        <QuickModeCards
-          selectedMode={analysisType}
-          onSelectMode={setAnalysisType}
-        />
+        {viewMode === "editor" && (
+          <QuickModeCards
+            selectedMode={analysisType}
+            onSelectMode={setAnalysisType}
+          />
+        )}
 
         {/* Telemetry Status bar */}
         <EditorStatusBar
@@ -586,7 +642,7 @@ function EditorWorkspacePageContent() {
 
       {/* 3. Right AI Analysis Preview Panel */}
       <AnimatePresence mode="wait">
-        {rightPanelOpen && (
+        {rightPanelOpen && viewMode === "editor" && (
           <motion.div
             initial={{ width: 0, opacity: 0 }}
             animate={{ width: 320, opacity: 1 }}
@@ -607,7 +663,8 @@ function EditorWorkspacePageContent() {
           </motion.div>
         )}
       </AnimatePresence>
-      {/* Guided Tour Tooltip Overlays */}
+
+      {/* Guided Tour Overlays */}
       <AnimatePresence>
         {tourStep && (
           <div className="fixed inset-0 z-50 pointer-events-none">
@@ -626,7 +683,7 @@ function EditorWorkspacePageContent() {
                 </div>
                 <h3 className="text-xs font-bold text-white leading-tight">Monaco Code Editor Workspace</h3>
                 <p className="text-[11px] text-slate-400 leading-relaxed">
-                  This features autocomplete, multiple cursors, folding blocks, search/replace mappers, and files upload drop-zones.
+                  Features autocomplete, folding, search/replace, and file upload zones.
                 </p>
                 <div className="flex justify-end pt-1">
                   <button
@@ -655,7 +712,7 @@ function EditorWorkspacePageContent() {
                 </div>
                 <h3 className="text-xs font-bold text-white leading-tight">AI Diagnostics Launcher</h3>
                 <p className="text-[11px] text-slate-400 leading-relaxed">
-                  Choose audit modes (Bug scans, Security audits, Performance tuning) and click &quot;Analyze Code&quot; to compile real Codex outputs.
+                  Choose audit modes (Bug scans, Security audits, Performance tuning) and click &quot;Analyze Code&quot;.
                 </p>
                 <div className="flex justify-end pt-1">
                   <button
@@ -684,7 +741,7 @@ function EditorWorkspacePageContent() {
                 </div>
                 <h3 className="text-xs font-bold text-white leading-tight">Audits Insights & Fixes</h3>
                 <p className="text-[11px] text-slate-400 leading-relaxed">
-                  Review security, performance, bugs details, and apply code modifications back into the Monaco editor with one click.
+                  Review security, performance, bugs, and apply fixes back into Monaco.
                 </p>
                 <div className="flex justify-end pt-1">
                   <button

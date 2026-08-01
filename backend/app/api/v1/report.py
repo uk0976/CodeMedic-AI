@@ -100,74 +100,89 @@ def export_report(
         )
 
     elif export_format == "markdown":
-        # Generate clean developer-friendly Markdown report
-        md = f"""# CodeMedic AI - Code Analysis Report
+        md = f"""# CodeMedic AI - Executive Audit Report
 
-**File Name:** {report.file_name}
+**Target File:** `{report.file_name}`
 **Language:** {report.language.capitalize()}
 **Analysis Type:** {report.analysis_type}
 **Date:** {report.created_at.strftime("%Y-%m-%d %H:%M:%S")}
-**Confidence:** {report.confidence}%
+**AI Confidence:** {report.confidence}%
 
 ---
 
 ## 1. Executive Summary
 {report.summary}
 
----
+"""
+        if report.code_explanation:
+            md += f"### Detailed AI Code Explanation\n{report.code_explanation}\n\n"
 
-## 2. Quality Scores
-- **Code Quality Score:** {report.code_quality_score}/100
-- **Security Score:** {report.security_score}/100
+        md += f"""---
+
+## 2. Dynamic Scores & Quality Matrix
+- **Overall Code Health:** {report.code_quality_score}/100
+- **Security Rating:** {report.security_score}/100
 - **Total Bugs Detected:** {report.bug_count}
 - **Scan Duration:** {report.analysis_duration}s
 
 ---
 
-## 3. Complexity Estimates
+## 3. Complexity & Algorithmic Bounds
 - **Time Complexity:** {report.complexity.get("time", "N/A")}
 - **Space Complexity:** {report.complexity.get("space", "N/A")}
 - **Description:** {report.complexity.get("explanation", "N/A")}
 
 ---
 
-## 4. Detected Bugs & Code Quality Issues
+## 4. Detected Bugs & Flaws
 """
         if not report.issues:
             md += "No bugs detected in the parsed code.\n"
         else:
             for idx, issue in enumerate(report.issues, 1):
-                line_str = (
-                    f" (Line {issue.get('line_number')})" if issue.get("line_number") else ""
-                )
+                line_num = issue.get("line") or issue.get("line_number")
+                line_str = f" (Line {line_num})" if line_num else ""
                 md += f"### {idx}. {issue.get('title')}\n"
-                md += f"- **Severity:** {issue.get('severity', 'low').upper()}\n"
-                md += f"- **Location:** {report.file_name}{line_str}\n"
-                md += f"- **Description:** {issue.get('description')}\n\n"
+                md += f"- **Severity:** `{str(issue.get('severity', 'low')).upper()}`\n"
+                md += f"- **Location:** `{report.file_name}{line_str}`\n"
+                md += f"- **Description:** {issue.get('description')}\n"
+                if issue.get("why_it_happens"):
+                    md += f"- **Why It Happens:** {issue.get('why_it_happens')}\n"
+                if issue.get("impact"):
+                    md += f"- **Runtime Impact:** {issue.get('impact')}\n"
+                if issue.get("fix"):
+                    md += f"- **Fix:** {issue.get('fix')}\n"
+                md += "\n"
 
-        md += "\n---\n\n## 5. Security Analysis\n"
+        md += "\n---\n\n## 5. Security & OWASP Audit\n"
         if not report.security:
             md += "No security exposures or credential vulnerabilities detected.\n"
         else:
             for idx, sec in enumerate(report.security, 1):
-                md += f"### {idx}. {sec.get('title')}\n"
-                md += f"- **Severity:** {sec.get('severity', 'low').upper()}\n"
-                md += f"- **Description:** {sec.get('description')}\n\n"
+                finding = sec.get("finding") or sec.get("title")
+                owasp = sec.get("owasp_category", "OWASP General")
+                remediation = sec.get("remediation") or sec.get("fix")
+                md += f"### {idx}. {finding}\n"
+                md += f"- **Severity:** `{str(sec.get('severity', 'low')).upper()}`\n"
+                md += f"- **OWASP Category:** {owasp}\n"
+                if remediation:
+                    md += f"- **Remediation:** {remediation}\n"
+                md += "\n"
 
-        md += "\n---\n\n## 6. Performance Recommendations\n"
-        if not report.performance:
-            md += "No performance bottlenecks detected. Code execution pattern is efficient.\n"
-        else:
-            for idx, perf in enumerate(report.performance, 1):
-                md += f"### {idx}. {perf.get('title')}\n"
-                md += f"- **Impact:** {perf.get('impact', 'low').upper()}\n"
-                md += f"- **Description:** {perf.get('description')}\n\n"
+        if report.code_review:
+            md += "\n---\n\n## 6. Senior Code Review & SOLID Architecture\n"
+            for idx, cr in enumerate(report.code_review, 1):
+                md += f"### {idx}. {cr.get('category')}\n"
+                md += f"- **Status:** `{str(cr.get('status', 'pass')).upper()}`\n"
+                md += f"- **Suggestion:** {cr.get('suggestion')}\n\n"
 
-        md += "\n---\n\n## 7. Recommendations & Final Checkpoints\n"
-        md += "Review the optimized source code and apply checks directly in development.\n\n"
-        md += "Generated by CodeMedic AI — Fix. Explain. Optimize. Powered by Codex.\n"
+        md += "\n---\n\n## 7. Refactored Source Code\n"
+        if report.why_better:
+            md += f"### Why this version is better\n{report.why_better}\n\n"
+        md += f"```{report.language}\n{report.optimized_code}\n```\n\n"
 
-        # Return as downloadable string stream
+        md += "Generated by CodeMedic AI — Fix. Explain. Optimize. Powered by AI Engine.\n"
+
         mem = io.BytesIO(md.encode("utf-8"))
         filename = f"codemedic_report_{report.file_name}.md"
         return StreamingResponse(
@@ -177,7 +192,6 @@ def export_report(
         )
 
     elif export_format == "json":
-        # Wrap database fields in dict and return as downloadable JSON attachment
         data = {
             "id": str(report.id),
             "file_name": report.file_name,
@@ -191,9 +205,12 @@ def export_report(
             "code": report.code,
             "optimized_code": report.optimized_code,
             "summary": report.summary,
+            "code_explanation": report.code_explanation,
+            "why_better": report.why_better,
             "issues": report.issues,
             "security": report.security,
             "performance": report.performance,
+            "code_review": report.code_review,
             "complexity": report.complexity,
             "tests": report.tests,
             "created_at": report.created_at.isoformat(),
@@ -218,11 +235,8 @@ def export_report(
     elif export_format == "tests":
         tests_content = "\n\n".join(report.tests) if report.tests else "# No tests generated"
         mem = io.BytesIO(tests_content.encode("utf-8"))
-
-        # Give appropriate extension for tests
         ext = report.file_name.split(".")[-1] if "." in report.file_name else "txt"
         filename = f"test_{report.file_name.split('.')[0]}.{ext}"
-
         return StreamingResponse(
             mem,
             media_type="text/plain",
@@ -234,17 +248,17 @@ def export_report(
 
 This directory contains source code optimized by CodeMedic AI's analysis engine.
 
-## Summary of Changes
+## Executive Summary
 {report.summary}
 
 ## Code Quality Highlights
-- Quality Score: {report.code_quality_score}/100
+- Overall Health Score: {report.code_quality_score}/100
 - Security Score: {report.security_score}/100
 - Bug Count: {report.bug_count} fixed
 
 ## File Details
 - `optimized_{report.file_name}`: Fully rewritten, optimized source file.
-- `test_{report.file_name}`: Suggested unit test cases code.
+- `test_{report.file_name}`: Production unit test suite.
 """
         mem = io.BytesIO(readme_content.encode("utf-8"))
         filename = "README_codemedic.md"
