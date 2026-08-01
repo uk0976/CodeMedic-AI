@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     api_v1_prefix: str = "/api/v1"
     database_url: str = "postgresql+psycopg://codemedic:codemedic@localhost:5432/codemedic"
     backend_cors_origins: Annotated[list[AnyHttpUrl], NoDecode] = Field(default_factory=list)
-    jwt_secret_key: SecretStr
+    jwt_secret_key: SecretStr = SecretStr("ci-fallback-secret-key-for-testing-123456789")
     jwt_algorithm: str = "HS256"
     jwt_access_token_expire_minutes: int = 30
     jwt_refresh_token_expire_days: int = 14
