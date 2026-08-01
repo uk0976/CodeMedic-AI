@@ -28,11 +28,11 @@ class OpenAIProvider(BaseAIProvider):
         system_prompt: str,
         user_prompt: str,
         response_format: type[T],
-        timeout: float = 30.0,
+        timeout: float = 15.0,
     ) -> T:
         model = "gpt-4o-mini"
-        max_retries = 3
-        delay = 1.0
+        max_retries = 2
+        delay = 0.5
         for attempt in range(max_retries):
             try:
                 logger.info(f"OpenAIProvider attempt {attempt + 1}/{max_retries} (Model: {model})")

@@ -285,6 +285,25 @@ function EditorWorkspacePageContent() {
         }
       }
 
+      if (!accumulatedResult) {
+        // Instant Fallback: If streaming was interrupted, call synchronous endpoint
+        setLoadingMessage("Finalizing diagnostic report...");
+        const syncRes = await fetch(`${env.apiUrl}/api/v1/analysis/analyze-sync`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            code: code,
+            language: language,
+            analysis_types: [analysisType],
+          }),
+        });
+        if (syncRes.ok) {
+          accumulatedResult = await syncRes.json();
+        }
+      }
+
       if (accumulatedResult) {
         setAnalysisResults(accumulatedResult);
         setViewMode("report");
@@ -310,7 +329,7 @@ function EditorWorkspacePageContent() {
           // Ignore save report errors
         }
       } else {
-        throw new Error("Did not receive final analysis results from backend.");
+        throw new Error("Unable to retrieve analysis results. Please try again.");
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);

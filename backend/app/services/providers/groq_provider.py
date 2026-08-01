@@ -27,7 +27,7 @@ class GroqProvider(BaseAIProvider):
         system_prompt: str,
         user_prompt: str,
         response_format: type[T],
-        timeout: float = 30.0,
+        timeout: float = 15.0,
     ) -> T:
         logger.info("Calling GroqProvider (llama-3.3-70b-versatile)...")
         response = self.client.chat.completions.create(
