@@ -25,6 +25,12 @@ DYNAMIC SCORE CALCULATION RULES:
 
 BAD CODE (containing bugs or OWASP security vulnerabilities) MUST NEVER RECEIVE A SCORE OVER 75.
 
+CRITICAL REFACTORING DIRECTIVE FOR 'optimized_code':
+1. You MUST generate the COMPLETE, FULL, RUNNABLE REFACTORED CODE from start to finish.
+2. ABSOLUTELY NEVER USE PLACEHOLDERS LIKE '...', '// Refactored code', '// rest of logic', or truncated comments.
+3. Every class, method, variable, loop, import statement, and logic block in the original code MUST be fully refactored and written out line by line with NO omissions.
+4. The output in 'optimized_code' MUST be a 100% complete, fully working drop-in replacement.
+
 You MUST return raw valid JSON matching the schema. No markdown fences.
 
 Required JSON Structure:
@@ -82,7 +88,7 @@ Required JSON Structure:
       "suggestion": "Actionable suggestion"
     }}
   ],
-  "optimized_code": "Full, syntactically complete, production-grade refactored code matching the target language.",
+  "optimized_code": "Full, syntactically complete, production-grade refactored code with ZERO placeholders or ellipsis.",
   "complexity": {{
       "time": "O(N^2)",
       "space": "O(N)",
@@ -106,4 +112,5 @@ Source Code to Analyze:
 ---
 {code}
 ---
+IMPORTANT: Output the complete, fully refactored, production-ready code in 'optimized_code'. Do NOT truncate or use '...' placeholders.
 """
