@@ -34,13 +34,15 @@ app = FastAPI(
     lifespan=lifespan,
 )
 app.add_middleware(RequestContextMiddleware)
+
+# Enable CORS for all Vercel domains, localhost, and production clients
+cors_origins = [str(origin).rstrip("/") for origin in settings.backend_cors_origins]
+cors_origins.extend(["http://localhost:3000", "http://127.0.0.1:3000"])
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=(
-        [str(origin).rstrip("/") for origin in settings.backend_cors_origins]
-        + [str(origin) for origin in settings.backend_cors_origins]
-    ),
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
