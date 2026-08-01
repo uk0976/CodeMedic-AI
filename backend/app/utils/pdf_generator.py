@@ -61,7 +61,6 @@ class NumberedCanvas(canvas.Canvas):  # type: ignore[misc]
 def generate_report_pdf(report: AnalysisReport) -> io.BytesIO:
     buffer = io.BytesIO()
 
-    # 0.75 in margins
     doc = SimpleDocTemplate(
         buffer,
         pagesize=letter,
@@ -73,7 +72,6 @@ def generate_report_pdf(report: AnalysisReport) -> io.BytesIO:
 
     styles = getSampleStyleSheet()
 
-    # Custom color palette (Dark Slate and Cyan/Teal accents)
     primary_color = colors.HexColor("#0f172a")  # Slate-900
     accent_color = colors.HexColor("#06b6d4")  # Cyan-500
     text_color = colors.HexColor("#334155")  # Slate-700
@@ -85,7 +83,7 @@ def generate_report_pdf(report: AnalysisReport) -> io.BytesIO:
         fontSize=28,
         leading=34,
         textColor=primary_color,
-        alignment=0,  # Left-aligned
+        alignment=0,
         spaceAfter=15,
     )
 
@@ -150,11 +148,10 @@ def generate_report_pdf(report: AnalysisReport) -> io.BytesIO:
     story = []
 
     # ------------------ COVER PAGE ------------------
-    story.append(Spacer(1, 100))
+    story.append(Spacer(1, 80))
     story.append(Paragraph("CodeMedic AI", title_style))
-    story.append(Paragraph("Fix. Explain. Optimize. Powered by Codex.", subtitle_style))
+    story.append(Paragraph("Fix. Explain. Optimize. Powered by AI Engine.", subtitle_style))
 
-    # Divider line
     story.append(
         Table(
             [[""]],
@@ -169,9 +166,8 @@ def generate_report_pdf(report: AnalysisReport) -> io.BytesIO:
             ),
         )
     )
-    story.append(Spacer(1, 30))
+    story.append(Spacer(1, 25))
 
-    # Metadata Table
     created_str = report.created_at.strftime("%B %d, %Y %I:%M %p")
     metadata_data = [
         [Paragraph("<b>File Name:</b>", body_style), Paragraph(report.file_name, body_style)],
@@ -194,17 +190,16 @@ def generate_report_pdf(report: AnalysisReport) -> io.BytesIO:
         TableStyle(
             [
                 ("VALIGN", (0, 0), (-1, -1), "TOP"),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
-                ("TOPPADDING", (0, 0), (-1, -1), 6),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+                ("TOPPADDING", (0, 0), (-1, -1), 5),
                 ("LEFTPADDING", (0, 0), (-1, -1), 0),
             ]
         )
     )
     story.append(metadata_table)
 
-    story.append(Spacer(1, 40))
+    story.append(Spacer(1, 30))
 
-    # Score Summary blocks
     score_data = [
         ["Quality Score", "Bug Count", "Security Score"],
         [f"{report.code_quality_score}/100", str(report.bug_count), f"{report.security_score}/100"],
@@ -262,14 +257,13 @@ def generate_report_pdf(report: AnalysisReport) -> io.BytesIO:
 
     # ------------------ EXECUTIVE SUMMARY ------------------
     story.append(Paragraph("Executive Summary", h1_style))
-    story.append(Paragraph(report.summary, body_style))
+    story.append(Paragraph(report.summary or "CodeMedic AI diagnostic scan completed.", body_style))
     story.append(Spacer(1, 15))
 
-    # Complexity specifications
     story.append(Paragraph("Complexity Estimates", h2_style))
-    comp_time = report.complexity.get("time", "N/A")
-    comp_space = report.complexity.get("space", "N/A")
-    comp_details = report.complexity.get("explanation", "No explanation provided.")
+    comp_time = (report.complexity or {}).get("time", "O(1)")
+    comp_space = (report.complexity or {}).get("space", "O(1)")
+    comp_details = (report.complexity or {}).get("explanation", "Asymptotic analysis completed.")
     complexity_text = (
         f"<b>Time Complexity:</b> {comp_time}<br/>"
         f"<b>Space Complexity:</b> {comp_space}<br/><br/>"
@@ -282,17 +276,18 @@ def generate_report_pdf(report: AnalysisReport) -> io.BytesIO:
     story.append(Paragraph("Detected Bugs & Code Issues", h1_style))
     if not report.issues:
         story.append(
-            Paragraph(
-                "No code issues or bugs were detected. Implementation is clean.",
-                body_style,
-            )
+            Paragraph("No code issues or bugs were detected. Implementation is clean.", body_style)
         )
     else:
         for idx, issue in enumerate(report.issues, 1):
-            title = issue.get("title", "Issue Details")
-            desc = issue.get("description", "")
-            sev = issue.get("severity", "low").upper()
-            line = issue.get("line_number")
+            if isinstance(issue, dict):
+                title = issue.get("title", f"Issue #{idx}")
+                desc = issue.get("description", "")
+                sev = str(issue.get("severity", "low")).upper()
+                line = issue.get("line") or issue.get("line_number")
+                fix = issue.get("fix")
+            else:
+                title, desc, sev, line, fix = f"Issue #{idx}", str(issue), "LOW", None, None
 
             line_str = f" (Line {line})" if line else ""
             story.append(
@@ -302,6 +297,8 @@ def generate_report_pdf(report: AnalysisReport) -> io.BytesIO:
                 )
             )
             story.append(Paragraph(desc, body_style))
+            if fix:
+                story.append(Paragraph(f"<b>Fix Recommendation:</b> {fix}", body_style))
     story.append(Spacer(1, 15))
 
     # ------------------ SECURITY ANALYSIS ------------------
@@ -315,16 +312,20 @@ def generate_report_pdf(report: AnalysisReport) -> io.BytesIO:
         )
     else:
         for idx, sec in enumerate(report.security, 1):
-            title = sec.get("title", "Vulnerability Details")
-            desc = sec.get("description", "")
-            sev = sec.get("severity", "low").upper()
+            if isinstance(sec, dict):
+                finding = sec.get("finding") or sec.get("title") or f"Finding #{idx}"
+                sev = str(sec.get("severity", "low")).upper()
+                fix = sec.get("fix") or sec.get("description")
+            else:
+                finding, sev, fix = f"Finding #{idx}", "LOW", str(sec)
 
             story.append(
                 Paragraph(
-                    f"<b>{idx}. {title}</b> — <font color='orange'><b>{sev}</b></font>", h2_style
+                    f"<b>{idx}. {finding}</b> — <font color='orange'><b>{sev}</b></font>", h2_style
                 )
             )
-            story.append(Paragraph(desc, body_style))
+            if fix:
+                story.append(Paragraph(f"<b>Remediation:</b> {fix}", body_style))
     story.append(Spacer(1, 15))
 
     # ------------------ PERFORMANCE ANALYSIS ------------------
@@ -338,12 +339,16 @@ def generate_report_pdf(report: AnalysisReport) -> io.BytesIO:
         )
     else:
         for idx, perf in enumerate(report.performance, 1):
-            title = perf.get("title", "Performance Area")
-            desc = perf.get("description", "")
-            impact = perf.get("impact", "Low")
+            if isinstance(perf, dict):
+                p_issue = perf.get("issue") or perf.get("title") or f"Performance Item #{idx}"
+                impact = perf.get("impact", "Low")
+                fix = perf.get("fix") or perf.get("description")
+            else:
+                p_issue, impact, fix = f"Performance Item #{idx}", "Low", str(perf)
 
-            story.append(Paragraph(f"<b>{idx}. {title}</b> — Impact: <b>{impact}</b>", h2_style))
-            story.append(Paragraph(desc, body_style))
+            story.append(Paragraph(f"<b>{idx}. {p_issue}</b> — Impact: <b>{impact}</b>", h2_style))
+            if fix:
+                story.append(Paragraph(f"<b>Optimization Suggestion:</b> {fix}", body_style))
 
     story.append(PageBreak())
 
@@ -355,7 +360,8 @@ def generate_report_pdf(report: AnalysisReport) -> io.BytesIO:
             body_style,
         )
     )
-    story.append(Preformatted(report.optimized_code, code_style, maxLineLength=80))
+    opt_code = report.optimized_code or "// No optimized code provided"
+    story.append(Preformatted(opt_code, code_style, maxLineLength=80))
     story.append(Spacer(1, 15))
 
     # ------------------ SUGGESTED UNIT TESTS ------------------

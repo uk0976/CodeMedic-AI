@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     demo_account_email: str = "evaluator@codemedic.ai"
     demo_account_password: SecretStr = SecretStr("change-this-demo-password-in-production")
     openai_api_key: SecretStr | None = None
+    groq_api_key: SecretStr | None = None
 
     @field_validator("backend_cors_origins", mode="before")
     @classmethod
