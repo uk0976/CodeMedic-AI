@@ -287,6 +287,7 @@ function EditorWorkspacePageContent() {
 
       if (accumulatedResult) {
         setAnalysisResults(accumulatedResult);
+        setViewMode("report");
         setEditorStatus("Saved");
 
         // Save report to backend
